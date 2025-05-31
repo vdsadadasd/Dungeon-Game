@@ -2,11 +2,26 @@ from Player import Player
 from Guardian import Guardian
 from Items import Items
 from Rooms import Room, get_grid
-from assets import guardian_encounter_art, guardian_intro_art, dungeon_art, bow_art, arrow_art
+from assets import guardian_encounter_art, guardian_intro_art, dungeon_art, bow_art, arrow_art, player_death, guardian_look
 import os
 import random
 import time
 import sys
+import sys
+import tty
+import termios
+
+
+
+def getch(): # Made by AI for the purpose of user experience, does not effect backend
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
 
 class Game:
     def __init__(self):
@@ -17,14 +32,14 @@ class Game:
         self.arrow = Items("Arrow", "Ammo", 1)
         self.cheat_mode = False
         
-    
+    # Made by AI for the purpose of user experience, does not effect backend
     def slow_text(self, text, delay=0.05):
         for char in text:
             sys.stdout.write(char)
             sys.stdout.flush()
             time.sleep(delay)
         print()
-    
+    # Made by AI for the purpose of user experience, does not effect backend
     def slow_art(self, art, line_delay=0.1):
         lines = art.strip('\n').split('\n')
         for line in lines:
@@ -56,15 +71,15 @@ class Game:
 
         else:
             self.slow_text("How will you attack?\n", 0.04)
-            attack = input("Punch(P) or Shoot your Bow(B)\n").upper()
+            attack = input("Melee(M) or Shoot your Bow(B)\n").upper()
 
-            if attack == "P":
+            if attack == "M":
                 self.P1.player_attack(self.guard)
                 input("Press Enter to continue...")
 
             elif attack == "B":
                 if any(item.name == "Bow" for item in self.P1.inventory):
-                    self.P1.use_bow()
+                    self.P1.use_bow_encounter(self.guard)
                     input("Press Enter to continue...")
                 else:
                     print("You don't have a bow in your inventory!")
@@ -93,6 +108,7 @@ class Game:
                     print(f"You took {self.guard.guardian_strength} damage. Your health is now {self.P1.player_health}.")
                 else:
                     self.slow_text("You dodged just in time!", 0.04)
+                    self.slow_text("The guardian cowers and retreats into the shadows...", 0.04)
                 input("Press Enter to continue...")
     
     def difficulty_select(self):
@@ -103,24 +119,28 @@ class Game:
             self.slow_text("========================================", 0.01)
             self.slow_text("1. Normal (4x4)", 0.03)
             self.slow_text("2. Brutal (5x5)", 0.03)
-            self.slow_text("3. Cheat (5x5 + shows hidden items)", 0.03)
             self.slow_text("----------------------------------------", 0.01)
-            choice = input("Enter 1, 2, or 3: ")
+            
+            choice = input("Enter 1 or 2: ")
             if choice == "1":
                 self.grid_size = 4
-                self.cheat_mode = False
                 break
             elif choice == "2":
                 self.grid_size = 5
-                self.cheat_mode = False
-                break
-            elif choice == "3":
-                self.grid_size = 5
-                self.cheat_mode = True
                 break
             else:
                 self.slow_text("Invalid choice. Try again.", 0.03)
-                time.sleep(1)
+
+        cheat = input("Enable Cheat Mode? (Y/N): ").upper()
+        if cheat == "Y":
+            self.cheat_mode = True 
+        else:
+            self.cheat_mode = False
+
+        self.slow_text("========================================", 0.01)
+        choice2 = input("Skip Intro? (Y/N): ").upper()
+        if choice2 == "N":
+            self.intro()
 
 
     def guard_intro(self):
@@ -128,8 +148,6 @@ class Game:
         print(guardian_intro_art())
         print()
         self.slow_text("...\n", 0.5)
-        self.slow_text("A shadow looms before you.", 0.07)
-        self.slow_text("Its eyes burn like fire in the darkness.\n", 0.07)
         self.slow_text("The Guardian sees you.\n", 0.1)
         self.slow_text("“Your fate is sealed.”\n", 0.12)
         self.slow_text("You manage to escape.\n", 0.15)
@@ -138,24 +156,10 @@ class Game:
         self.clear_screen()
 
     def found_bow(self):
-        self.clear_screen()
-        self.slow_text("\n========================================", 0.01)
-        self.slow_text("          You found a Bow!", 0.05)
-        self.slow_text("========================================\n", 0.01)
-        self.slow_art(bow_art(), 0.05)
-        time.sleep(1.5)
-        input("\nPress Enter to continue...")
-        self.clear_screen()
+        self.slow_text("you've found a bow...", 0.05)
 
     def found_arrow(self):
-        self.clear_screen()
-        self.slow_text("\n========================================", 0.01)
-        self.slow_text("          You found an Arrow!", 0.05)
-        self.slow_text("========================================\n", 0.01)
-        self.slow_art(arrow_art(), 0.05)
-        time.sleep(1.5)
-        input("\nPress Enter to continue...")
-        self.clear_screen()
+        self.slow_text("you've found an arrow...", 0.05)
 
     def intro(self):
         self.clear_screen()
@@ -168,11 +172,33 @@ class Game:
         input("Press Enter to begin...")
         self.guard_intro()
         self.clear_screen()
+    
+    def player_death(self):
+        self.clear_screen()
+        self.slow_text("\n========================================", 0.01)
+        self.slow_text("          You have been defeated!", 0.05)
+        self.slow_text("========================================\n", 0.01)
+        self.slow_art(bow_art(player_death), 0.05)
+        self.slow_text("Your fate is sealed\n", 0.07)
+        self.slow_text("Better luck next time!", 0.05)
+        input("Press Enter to exit...")
+    
+    def guardian_death(self):
+        self.clear_screen()
+        print("========================================")
+        print("          You have defeated the guardian!")
+        print("========================================")
+        self.slow_text("You feel a shiver down your spine...", 0.05)
+        self.slow_art(bow_art(guardian_look), 0.05)
+        self.slow_text("Well done", 0.05)
+        input("Press Enter to exit...")
+        
+        
 
     def guardian_spawn(self):
         while True:
-            row = random.randint(0, 4)
-            col = random.randint(0, 4)
+            row = random.randint(0, self.grid_size - 1)
+            col = random.randint(0, self.grid_size - 1)
             if (row, col) != (self.P1.row, self.P1.col):
                 self.guard.row = row
                 self.guard.col = col
@@ -180,8 +206,8 @@ class Game:
 
     def bow_spawn(self):
         while True:
-            row = random.randint(0, 4)
-            col = random.randint(0, 4)
+            row = random.randint(0, self.grid_size - 1)
+            col = random.randint(0, self.grid_size - 1)
             if (row, col) != (self.P1.row, self.P1.col):
                 self.bow.row = row
                 self.bow.col = col
@@ -189,25 +215,31 @@ class Game:
 
     def arrow_spawn(self):
         while True:
-            row = random.randint(0, 4)
-            col = random.randint(0, 4)
+            row = random.randint(0, self.grid_size - 1)
+            col = random.randint(0, self.grid_size - 1)
             if (row, col) != (self.P1.row, self.P1.col) and (row, col) != (self.bow.row, self.bow.col):
                 self.arrow.row = row
                 self.arrow.col = col
                 break
 
     def clear_screen(self):
-        os.system('clear')
+        os.system('clear') # Made by AI for the purpose of user experience, does not effect backend
 
     def start(self):
         self.difficulty_select()
         self.P1.grid_size = self.grid_size
-        # self.intro()
         self.bow_spawn()
         self.arrow_spawn()
         self.guardian_spawn()
 
         while True:
+            if self.P1.player_health < 0:
+                self.player_death()
+            elif self.guard.guardian_health < 0:
+                self.player_death()
+            else:
+                pass
+
             self.clear_screen()
             get_grid(
             self.P1.row,
@@ -216,58 +248,62 @@ class Game:
             self.cheat_mode,
             bow_pos=(self.bow.row, self.bow.col),
             arrow_pos=(self.arrow.row, self.arrow.col),
-            guardian_pos=(self.guard.row, self.guard.col)
+            guardian_pos=(self.guard.row, self.guard.col),
+            inventory=self.P1.inventory 
         )
 
             messages = ["You hear it...", "Footsteps approach...", "Something is nearby..."]
             distance = abs(self.P1.row - self.guard.row) + abs(self.P1.col - self.guard.col)
             if distance == 1:
                 print()
-                print(random.choice(messages))
+                self.slow_text(random.choice(messages), 0.04)
 
-            move = input("Move(W/A/S/D),Inventory(I), Quit(Q): ").upper()
+            # Original Move Input
+            # move = input("Move(W/A/S/D),Inventory(I), Quit(Q): ").upper()
+
+            print("Move(W/A/S/D), Use item(U): ", end='', flush=True)
+            move = getch().upper() # I used AI to get the input without waiting for Enter key
+            print(move)  
 
             if move in ["W", "A", "S", "D"]:
                 if not self.P1.move_player(move):
-                    print("Invalid movement, try again.")
-                    input("Press Enter to continue...")
+                    self.slow_text("Invalid movement, try again.", 0.04)
+
                 else:
                     self.clear_screen()
 
-                self.guard.move_guardian()
+                self.guard.move_guardian(self.grid_size)
 
                 if (self.P1.row, self.P1.col) == (self.bow.row, self.bow.col) and self.bow not in self.P1.inventory:
                     self.found_bow()
                     self.P1.inventory.append(self.bow)
-                    input("Press Enter to continue...")
+                    self.bow.row = None
+                    self.bow.col = None
 
                 if (self.P1.row, self.P1.col) == (self.arrow.row, self.arrow.col) and self.arrow not in self.P1.inventory:
                     self.found_arrow()
                     self.P1.inventory.append(self.arrow)
-                    input("Press Enter to continue...")
+                    self.arrow.row = None
+                    self.arrow.col = None
 
                 if (self.P1.row, self.P1.col) == (self.guard.row, self.guard.col):
                     self.guard_encounter()
 
-            elif move == "I":
+            elif move == "U":
                 if not self.P1.inventory:
-                    print("Your inventory is empty")
-                    input("Press Enter to continue...")
+                    self.slow_text("Your inventory is empty", 0.01)
+                    self.slow_text("Press Enter to continue...", 0.01)
+                    input()
                 else:
-                    self.P1.get_inventory()
-                    use = input("Would you like to use an item (Y/N): ").upper()
-                    if use == "Y":
-                        self.P1.use_item()
-                    else:
-                        input("Press Enter to continue...")
-
-            elif move == "Q":
-                print("Thanks for playing!")
-                break
+                    self.P1.use_item(self.guard)
+                    self.slow_text("Press Enter to continue...", 0.01)
+                    input()
+            
 
             else:
-                print("Invalid input. Use W, A, S, D, I, or Q.")
-                input("Press Enter to continue...")
+                self.slow_text("Invalid input. Use W, A, S, D, I, or Q.", 0.01)
+                self.slow_text("Press Enter to continue...", 0.01)
+                input()
 
 game = Game()
 game.start()

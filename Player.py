@@ -1,77 +1,121 @@
 import random
+import sys
+import time
+from assets import take_aim_art
+
+def slow_text(text, delay=0.04):
+    for char in text:
+        print(char, end='', flush=True)
+        time.sleep(delay)
+    print()
+
+def slow_art(art, line_delay=0.1):
+        lines = art.strip('\n').split('\n')
+        for line in lines:
+            print(line)
+            time.sleep(line_delay)
 
 class Player:
     def __init__(self, player_health, player_strength, grid_size):
         self.player_health = player_health
         self.player_strength = player_strength  
         self.inventory = []  
-        self.bow_quiver = 0
         self.current_room = None
         self.row = random.randint(0, grid_size - 1)
         self.col = random.randint(0, grid_size - 1)
+        self.grid_size = grid_size
 
     def player_attack(self, damage):
         damage.guardian_health -= self.player_strength  
         if damage.guardian_health < 0:
             damage.guardian_health = 0
-        print(f"You did {self.player_strength} damage. The guardian has {damage.guardian_health} HP remaining.")
+        slow_text(f"You did {self.player_strength} damage. The guardian has {damage.guardian_health} HP remaining.", 0.03)
     
     def get_health(self):
-        print(f"Current HP: {self.player_health}")
+        slow_text(f"Current HP: {self.player_health}", 0.03)
     
     def get_inventory(self):
         if self.inventory == []:
-            print("Your inventory is empty")
+            slow_text("Your inventory is empty", 0.03)
         else:
-            print("Your inventory:")
+            slow_text("Your inventory:", 0.03)
             for i, item in enumerate(self.inventory, 1):
-                print(f"{i}: {item.name} x{item.quantity}")
-
-    def use_bow(self):
-        for item in self.inventory:
-            if item.name == "Bow" and item.quantity > 0:
-                if self.bow_quiver > 0:
-                    direction = input("What direction do you want to shoot? W/A/S/D").upper()
-                    self.bow_quiver -= 1
-                    print(f"You currently have {self.bow_quiver}/6 arrows in the quiver")
-                else:
-                    print("No arrows in the quiver")                             
-                return
-        print("Not in inventory")
-
-
+                slow_text(f"{i}: {item.name} x{item.quantity}", 0.03)
+    
     def use_arrow(self):
+        slow_text("You have an arrow, Use them with a bow", 0.03)
+
+    def use_bow_encounter(self, damage):
+        slow_text("You hit the guardian with your bow! 100 damage dealt.", 0.03)
+        damage.guardian_health -= 100
+        if damage.guardian_health < 0:
+            damage.guardian_health = 0
+        slow_text(f"Guardian health is now {damage.guardian_health}.", 0.03)
+        
+
+    def use_bow(self, guardian):
+        if not any(item.name == "Bow" for item in self.inventory):
+            slow_text("Bow not in inventory", 0.03)
+            return
+        if not any(item.name == "Arrow" for item in self.inventory):
+            slow_text("No arrows left", 0.03)
+            return
+        slow_text("You take aim", 0.06)
+        slow_art(take_aim_art())
+        slow_text("Shoot direction (W/A/S/D): ", 0.03)
+        direction = input().upper()
+
         for item in self.inventory:
-            if "Bow" in item.name:
-                for arrow in self.inventory:
-                    if arrow.name == "Arrow" and arrow.quantity > 0:
-                        self.bow_quiver += arrow.quantity
-                        if self.bow_quiver > 6:
-                            self.bow_quiver = 6
-                        print(f"You inserted {arrow.quantity} arrow into your quiver. quiver: {self.bow_quiver}/1")
-                        arrow.quantity = 0
-                        self.inventory.remove(arrow)
-                        return
-                print("Not in inventory")
-                return
-        print("You don't have a bow")
-
-    def use_item(self):
-        while True:
-            item_choice = input("What item would you like to use: ").lower()
-            for item in self.inventory:
-                if item.name.lower() == item_choice and item.quantity > 0:
-                    if item.name == "Bow":
-                        self.use_bow()
-                    elif item.name == "Arrow":
-                        self.use_arrow()
-                    break
-            else:
-                print("Item not in inventory")  
-
-            again = input("Would you like to use anything else? (Y/N): ").lower()
-            if again != "y":
+            if item.name == "Arrow" and item.quantity > 0:
+                item.quantity -= 1
+                if item.quantity == 0:
+                    self.inventory.remove(item)
                 break
+
+        target_row, target_col = self.row, self.col
+        if direction == "W":
+            target_row -= 1
+        elif direction == "S":
+            target_row += 1
+        elif direction == "A":
+            target_col -= 1
+        elif direction == "D":
+            target_col += 1
+        else:
+            slow_text("Invalid direction.", 0.03)
+            return
+
+        if (target_row, target_col) == (guardian.row, guardian.col):
+            slow_text("Critical hit! The guardian's life force fades away", 0.03)
+            guardian.guardian_health = 0 
+        else:
+            slow_text("The arrow missed.", 0.03)
+
+    def use_item(self, guardian):
+        while True:
+            if guardian.guardian_health <= 0:
+                break
+            else:
+                pass
+                slow_text("What item would you like to use: ", 0.03)
+                item_choice = input().lower()
+                for item in self.inventory:
+                    if item.name.lower() == item_choice and item.quantity > 0:
+                        if item.name == "Bow":
+                            self.use_bow(guardian)
+                            if guardian.guardian_health <= 0:
+                                return 
+                        elif item.name == "Arrow":
+                            self.use_arrow()
+                        break
+                else:
+                    slow_text("Item not in inventory", 0.03)  
+
+                slow_text("Would you like to use anything else? (Y/N): ", 0.03)
+                again = input().lower()
+                if again != "y":
+                    break
+                
 
     def move_player(self, direction):
         direction = direction.upper()

@@ -110,6 +110,9 @@ class Game:
                     self.slow_text("You dodged just in time!", 0.04)
                     self.slow_text("The guardian cowers and retreats into the shadows...", 0.04)
                 input("Press Enter to continue...")
+        
+        if self.guard.guardian_health > 0:
+            self.guardian_spawn()
     
     def difficulty_select(self):
         while True:
@@ -176,20 +179,20 @@ class Game:
     def player_death(self):
         self.clear_screen()
         self.slow_text("\n========================================", 0.01)
-        self.slow_text("          You have been defeated!", 0.05)
+        self.slow_text("          You have been defeated!         ", 0.05)
         self.slow_text("========================================\n", 0.01)
-        self.slow_art(bow_art(player_death), 0.05)
+        self.slow_art(player_death())
         self.slow_text("Your fate is sealed\n", 0.07)
         self.slow_text("Better luck next time!", 0.05)
         input("Press Enter to exit...")
     
     def guardian_death(self):
         self.clear_screen()
-        print("========================================")
-        print("          You have defeated the guardian!")
-        print("========================================")
+        self.slow_text("\n========================================", 0.01)
+        self.slow_text("          You have defeated it!         ", 0.05)
+        self.slow_text("========================================\n", 0.01)
         self.slow_text("You feel a shiver down your spine...", 0.05)
-        self.slow_art(bow_art(guardian_look), 0.05)
+        self.slow_art(guardian_look())
         self.slow_text("Well done", 0.05)
         input("Press Enter to exit...")
         
@@ -233,10 +236,12 @@ class Game:
         self.guardian_spawn()
 
         while True:
-            if self.P1.player_health < 0:
+            if self.P1.player_health <= 0:
                 self.player_death()
-            elif self.guard.guardian_health < 0:
-                self.player_death()
+                break
+            elif self.guard.guardian_health <= 0:
+                self.guardian_death()
+                break
             else:
                 pass
 

@@ -7,10 +7,10 @@ class Guardian:
         self.row = None
         self.col = None
 
-    def guardian_attack(self, damage):
-        damage.player_health = damage.player_health - self.guardian_strength  
-        if damage.player_health < 0:
-            damage.player_health = 0
+    def guardian_attack(self, player):
+        player.player_health = player.player_health - self.guardian_strength  
+        if player.player_health < 0:
+            player.player_health = 0
         
     def move_guardian(self, grid_size):
         if random.random() < 0.5:

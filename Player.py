@@ -25,11 +25,11 @@ class Player:
         self.col = random.randint(0, grid_size - 1)
         self.grid_size = grid_size
 
-    def player_attack(self, damage):
-        damage.guardian_health -= self.player_strength  
-        if damage.guardian_health < 0:
-            damage.guardian_health = 0
-        slow_text(f"You did {self.player_strength} damage. The guardian has {damage.guardian_health} HP remaining.", 0.03)
+    def player_attack(self, guardian):
+        guardian.guardian_health -= self.player_strength  
+        if guardian.guardian_health < 0:
+            guardian.guardian_health = 0
+        slow_text(f"You did {self.player_strength} guardian. The guardian has {guardian.guardian_health} HP remaining.", 0.03)
     
     def get_health(self):
         slow_text(f"Current HP: {self.player_health}", 0.03)
@@ -45,12 +45,12 @@ class Player:
     def use_arrow(self):
         slow_text("You have an arrow, Use them with a bow", 0.03)
 
-    def use_bow_encounter(self, damage):
-        slow_text("You hit the guardian with your bow! 100 damage dealt.", 0.03)
-        damage.guardian_health -= 100
-        if damage.guardian_health < 0:
-            damage.guardian_health = 0
-        slow_text(f"Guardian health is now {damage.guardian_health}.", 0.03)
+    def use_bow_encounter(self, guardian):
+        slow_text("You hit the guardian with your bow! 100 guardian dealt.", 0.03)
+        guardian.guardian_health -= 100
+        if guardian.guardian_health < 0:
+            guardian.guardian_health = 0
+        slow_text(f"Guardian health is now {guardian.guardian_health}.", 0.03)
         
 
     def use_bow(self, guardian):

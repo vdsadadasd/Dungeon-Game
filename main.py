@@ -171,7 +171,7 @@ class Game:
         self.slow_text("You wake up in a cold, dark dungeon.\n", 0.07)
         self.slow_text("Your head throbs... you can't remember how you got here.\n", 0.07)
         self.slow_text("You hear something lurking in the shadows.\n", 0.07)
-        self.slow_text("You must find a way out... before it's too late.\n", 0.07)
+        self.slow_text("You must do something before its too late... before it's too late.\n", 0.07)
         input("Press Enter to begin...")
         self.guard_intro()
         self.clear_screen()

@@ -12,18 +12,18 @@ class Guardian:
         if damage.player_health < 0:
             damage.player_health = 0
         
-    def move_guardian(self):
-        if random.random() < 0.3:
+    def move_guardian(self, grid_size):
+        if random.random() < 0.5:
             move_type = random.choice(["row", "col"])
             move_direction = random.choice([-1, 1])
 
             if move_type == "row":
                 new_row = self.row + move_direction
-                if 0 <= new_row <= 4:
+                if 0 <= new_row < grid_size:
                     self.row = new_row
             else:
                 new_col = self.col + move_direction
-                if 0 <= new_col <= 4:
+                if 0 <= new_col < grid_size:
                     self.col = new_col
 
         

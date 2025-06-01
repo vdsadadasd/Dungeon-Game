@@ -90,6 +90,8 @@ class Player:
             guardian.guardian_health = 0 
         else:
             slow_text("The arrow missed.", 0.03)
+            slow_text("A new arrow has spawned.", 0.03)
+            self.arrow_spawn()
 
     def use_item(self, guardian):
         while True:

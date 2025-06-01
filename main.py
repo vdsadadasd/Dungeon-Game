@@ -182,8 +182,8 @@ class Game:
         self.slow_text("          You have been defeated!         ", 0.05)
         self.slow_text("========================================\n", 0.01)
         self.slow_art(player_death())
-        self.slow_text("Your fate is sealed\n", 0.07)
-        self.slow_text("Better luck next time!", 0.05)
+        self.slow_text("Your fate is sealed...\n", 0.07)
+        self.slow_text("Do you dare to try again?", 0.05)
         input("Press Enter to exit...")
     
     def guardian_death(self):

@@ -51,7 +51,7 @@ class Game:
 
         self.clear_screen()
         print(guardian_encounter_art())
-        self.slow_text("You encounter it, what will you do?", 0.04)
+        self.slow_text("You encounter it, what will you do- test git?", 0.04)
         option = input("Attack(A) or Attempt to Run(R): ").upper()
 
         if option == "R":

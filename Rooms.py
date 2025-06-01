@@ -19,9 +19,7 @@ class Room:
 # Made by AI for the purpose of user experience, does not effect backend
 def get_grid(player_row, player_col, grid_size, cheat_mode=False, bow_pos=None, arrow_pos=None, guardian_pos=None, inventory=None):
     inventory = inventory or []
-    # Prepare inventory icon/summary
     inv_lines = ["Inventory:"]
-    # Use a dictionary to count unique items by name
     item_counts = {}
     for item in inventory:
         if item.name in item_counts:

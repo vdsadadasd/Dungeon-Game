@@ -55,7 +55,7 @@ class Game:
         option = input("Attack(A) or Attempt to Run(R): ").upper()
 
         if option == "R":
-            if random.random() < 0.6:
+            if random.random() < 0.4:
                 self.slow_text("You managed to escape\n", 0.03)
                 self.slow_text("For now...", 0.25)
                 input("Press Enter to continue...")

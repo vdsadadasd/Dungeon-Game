@@ -2,6 +2,19 @@ import random
 import sys
 import time
 from assets import take_aim_art
+import sys
+import tty
+import termios
+
+def getch(): # Made by AI for the purpose of user experience, does not effect backend
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
 
 def slow_text(text, delay=0.04):
     for char in text:
@@ -63,7 +76,7 @@ class Player:
         slow_text("You take aim", 0.06)
         slow_art(take_aim_art())
         slow_text("Shoot direction (W/A/S/D): ", 0.03)
-        direction = input().upper()
+        direction = input().upper().getch()
 
         for item in self.inventory:
             if item.name == "Arrow" and item.quantity > 0:

@@ -279,15 +279,25 @@ class Game:
 
                 self.guard.move_guardian(self.grid_size)
 
-                if (self.P1.row, self.P1.col) == (self.bow.row, self.bow.col) and self.bow not in self.P1.inventory:
+                if (self.P1.row, self.P1.col) == (self.bow.row, self.bow.col):
+                    for item in self.P1.inventory:
+                        if item.name == "Bow":
+                            item.quantity += self.bow.quantity
+                            break
+                    else:
+                        self.P1.inventory.append(self.bow)
                     self.found_bow()
-                    self.P1.inventory.append(self.bow)
                     self.bow.row = None
                     self.bow.col = None
 
-                if (self.P1.row, self.P1.col) == (self.arrow.row, self.arrow.col) and self.arrow not in self.P1.inventory:
+                if (self.P1.row, self.P1.col) == (self.arrow.row, self.arrow.col):
+                    for item in self.P1.inventory:
+                        if item.name == "Arrow":
+                            item.quantity += self.arrow.quantity
+                            break
+                    else:
+                        self.P1.inventory.append(self.arrow)
                     self.found_arrow()
-                    self.P1.inventory.append(self.arrow)
                     self.arrow.row = None
                     self.arrow.col = None
 

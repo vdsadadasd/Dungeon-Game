@@ -81,7 +81,7 @@ class Game:
                     # Remove one arrow from inventory if present
                     for item in self.P1.inventory:
                         if item.name == "Arrow" and item.quantity > 0:
-                            item.quantity -= 1
+                            item.quantity = item.quantity - 1
                             if item.quantity == 0:
                                 self.P1.inventory.remove(item)
                             break
@@ -294,7 +294,7 @@ class Game:
                 if (self.P1.row, self.P1.col) == (self.bow.row, self.bow.col):
                     for item in self.P1.inventory:
                         if item.name == "Bow":
-                            item.quantity += self.bow.quantity
+                            item.quantity = item.quantity + self.bow.quantity
                             break
                     else:
                         self.P1.inventory.append(self.bow)
@@ -305,7 +305,7 @@ class Game:
                 if (self.P1.row, self.P1.col) == (self.arrow.row, self.arrow.col):
                     for item in self.P1.inventory:
                         if item.name == "Arrow":
-                            item.quantity += self.arrow.quantity
+                            item.quantity = item.quantity + self.arrow.quantity
                             break
                     else:
                         self.P1.inventory.append(self.arrow)

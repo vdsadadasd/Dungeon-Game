@@ -83,15 +83,17 @@ class Player:
             target_col += 1
         else:
             slow_text("Invalid direction.", 0.03)
-            return
+            return False
 
         if (target_row, target_col) == (guardian.row, guardian.col):
             slow_text("Critical hit! The guardian's life force fades away", 0.03)
             guardian.guardian_health = 0 
+            return False
         else:
             slow_text("The arrow missed.", 0.03)
             slow_text("A new arrow has spawned.", 0.03)
-            self.arrow_spawn()
+            return True
+            
 
     def use_item(self, guardian):
         while True:

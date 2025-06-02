@@ -300,9 +300,11 @@ class Game:
                     self.slow_text("Press Enter to continue...", 0.01)
                     input()
                 else:
-                    self.P1.use_item(self.guard)
-                    self.slow_text("Press Enter to continue...", 0.01)
-                    input()
+                    result = self.P1.use_item(self.guard)
+                    if result == True:
+                        self.arrow_spawn()
+                        self.slow_text("Press Enter to continue...", 0.01)
+                        input()
             
 
             else:

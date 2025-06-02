@@ -21,6 +21,7 @@ def get_grid(player_row, player_col, grid_size, cheat_mode=False, bow_pos=None, 
     inventory = inventory or []
     inv_lines = ["Inventory:"]
     item_counts = {}
+    # Use item name as key, sum all quantities for that name
     for item in inventory:
         if item.name in item_counts:
             item_counts[item.name] += item.quantity
@@ -74,7 +75,7 @@ def get_grid(player_row, player_col, grid_size, cheat_mode=False, bow_pos=None, 
 
 
 
-    
+
 
 
 

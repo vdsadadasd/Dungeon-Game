@@ -27,7 +27,7 @@ class Game:
     def __init__(self):
         self.grid_size = 4
         self.P1 = Player(100, 20, self.grid_size)
-        self.guard = Guardian(200, 40)
+        self.guard = Guardian(200, 50)
         self.bow = Items("Bow", "Weapon", 1)
         self.arrow = Items("Arrow", "Ammo", 1)
         self.cheat_mode = False

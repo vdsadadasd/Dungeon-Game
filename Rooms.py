@@ -19,10 +19,12 @@ class Room:
 # Made by AI for the purpose of user experience, does not effect backend
 def get_grid(player_row, player_col, grid_size, cheat_mode=False, bow_pos=None, arrow_pos=None, guardian_pos=None, inventory=None):
     inventory = inventory or []
+    # Filter out items with quantity 0
+    filtered_inventory = [item for item in inventory if getattr(item, "quantity", 1) > 0]
     inv_lines = ["Inventory:"]
     item_counts = {}
     # Use item name as key, sum all quantities for that name
-    for item in inventory:
+    for item in filtered_inventory:
         if item.name in item_counts:
             item_counts[item.name] += item.quantity
         else:
@@ -35,8 +37,8 @@ def get_grid(player_row, player_col, grid_size, cheat_mode=False, bow_pos=None, 
     max_inv_lines = max(len(inv_lines), grid_size * 2 + 1)
     inv_lines += [""] * (max_inv_lines - len(inv_lines))
 
-    has_bow = any(item.name.lower() == "bow" and item.quantity > 0 for item in inventory)
-    has_arrow = any(item.name.lower() == "arrow" and item.quantity > 0 for item in inventory)
+    has_bow = any(item.name.lower() == "bow" and item.quantity > 0 for item in filtered_inventory)
+    has_arrow = any(item.name.lower() == "arrow" and item.quantity > 0 for item in filtered_inventory)
     bow_pos_to_show = None if has_bow else bow_pos
     arrow_pos_to_show = None if has_arrow else arrow_pos
 

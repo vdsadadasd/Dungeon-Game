@@ -120,9 +120,10 @@ class Player:
                 for item in self.inventory:
                     if item.name.lower() == item_choice and item.quantity > 0:
                         if item.name == "Bow":
-                            self.use_bow(guardian)
+                            result = self.use_bow(guardian)
                             if guardian.guardian_health <= 0:
-                                return 
+                                return
+                            return result  # Return True if arrow missed, so main can spawn new arrow
                         elif item.name == "Arrow":
                             self.use_arrow()
                         break

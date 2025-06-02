@@ -76,7 +76,8 @@ class Player:
         slow_text("You take aim", 0.06)
         slow_art(take_aim_art())
         slow_text("Shoot direction (W/A/S/D): ", 0.03)
-        direction = input().upper().getch()
+        direction = getch().upper()
+        print(direction) 
 
         for item in self.inventory:
             if item.name == "Arrow" and item.quantity > 0:

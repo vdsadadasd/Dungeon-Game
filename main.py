@@ -78,7 +78,20 @@ class Game:
 
             elif attack == "B":
                 if any(item.name == "Bow" for item in self.P1.inventory):
+                    # Remove one arrow from inventory if present
+                    for item in self.P1.inventory:
+                        if item.name == "Arrow" and item.quantity > 0:
+                            item.quantity -= 1
+                            if item.quantity == 0:
+                                self.P1.inventory.remove(item)
+                            break
+                    else:
+                        print("No arrows left!")
+                        input("Press Enter to continue...")
+                        return
                     self.P1.use_bow_encounter(self.guard)
+                    print("A new arrow has spawned.")
+                    self.arrow_spawn()
                     input("Press Enter to continue...")
                 else:
                     print("You don't have a bow in your inventory!")

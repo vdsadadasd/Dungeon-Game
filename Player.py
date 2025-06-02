@@ -26,7 +26,7 @@ class Player:
         self.grid_size = grid_size
 
     def player_attack(self, guardian):
-        guardian.guardian_health -= self.player_strength  
+        guardian.guardian_health = guardian.guardian_health - self.player_strength  
         if guardian.guardian_health < 0:
             guardian.guardian_health = 0
         slow_text(f"You did {self.player_strength} damage. The guardian has {guardian.guardian_health} HP remaining.", 0.03)
@@ -47,7 +47,7 @@ class Player:
 
     def use_bow_encounter(self, guardian):
         slow_text("You hit the guardian with your bow! 100 guardian dealt.", 0.03)
-        guardian.guardian_health -= 100
+        guardian.guardian_health = guardian.guardian_health - 100
         if guardian.guardian_health < 0:
             guardian.guardian_health = 0
         slow_text(f"Guardian health is now {guardian.guardian_health}.", 0.03)
@@ -67,20 +67,20 @@ class Player:
 
         for item in self.inventory:
             if item.name == "Arrow" and item.quantity > 0:
-                item.quantity -= 1
+                item.quantity = item.quantity - 1
                 if item.quantity == 0:
                     self.inventory.remove(item)
                 break
 
         target_row, target_col = self.row, self.col
         if direction == "W":
-            target_row -= 1
+            target_row = target_row - 1
         elif direction == "S":
-            target_row += 1
+            target_row = target_row + 1
         elif direction == "A":
-            target_col -= 1
+            target_col = target_col - 1
         elif direction == "D":
-            target_col += 1
+            target_col = target_col + 1
         else:
             slow_text("Invalid direction.", 0.03)
             return False
@@ -125,15 +125,15 @@ class Player:
         direction = direction.upper()
         max_index = self.grid_size - 1
         if direction == "W" and self.row > 0:
-            self.row -= 1
+            self.row = self.row - 1
             return True
         elif direction == "S" and self.row < max_index:
-            self.row += 1
+            self.row = self.row + 1
             return True
         elif direction == "A" and self.col > 0:
-            self.col -= 1
+            self.col = self.col - 1
             return True
         elif direction == "D" and self.col < max_index:
-            self.col += 1
+            self.col = self.col + 1
             return True
         return False

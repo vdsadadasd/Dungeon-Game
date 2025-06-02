@@ -23,12 +23,12 @@ def get_grid(player_row, player_col, grid_size, cheat_mode=False, bow_pos=None, 
     filtered_inventory = [item for item in inventory if getattr(item, "quantity", 1) > 0]
     inv_lines = ["Inventory:"]
     item_counts = {}
-    # Use item name as key, sum all quantities for that name
+    # Only count each item name once (avoid double-counting same object)
+    seen_names = set()
     for item in filtered_inventory:
-        if item.name in item_counts:
-            item_counts[item.name] += item.quantity
-        else:
+        if item.name not in seen_names:
             item_counts[item.name] = item.quantity
+            seen_names.add(item.name)
     if not item_counts:
         inv_lines.append(" (empty)")
     else:

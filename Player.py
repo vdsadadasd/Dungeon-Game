@@ -29,7 +29,7 @@ class Player:
         guardian.guardian_health -= self.player_strength  
         if guardian.guardian_health < 0:
             guardian.guardian_health = 0
-        slow_text(f"You did {self.player_strength} guardian. The guardian has {guardian.guardian_health} HP remaining.", 0.03)
+        slow_text(f"You did {self.player_strength} damage. The guardian has {guardian.guardian_health} HP remaining.", 0.03)
     
     def get_health(self):
         slow_text(f"Current HP: {self.player_health}", 0.03)

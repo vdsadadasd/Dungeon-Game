@@ -278,7 +278,7 @@ class Game:
             # Original Move Input
             # move = input("Move(W/A/S/D),Inventory(I), Quit(Q): ").upper()
 
-            print("Move(W/A/S/D), Use item(U): ", end='', flush=True)
+            print("Move(W/A/S/D), Use item(U), Info(I): ", end='', flush=True)
             move = getch().upper() # I used AI to get the input without waiting for Enter key
             print(move)  
 
@@ -327,10 +327,22 @@ class Game:
                         self.arrow_spawn()
                         self.slow_text("Press Enter to continue...", 0.01)
                         input()
-            
+
+            elif move == "I":
+                self.slow_text("\n=== Dungeon Game Info ===", 0.03)
+                self.slow_text("Objective: Escape the dungeon by defeating the Guardian.", 0.03)
+                self.slow_text("You can move using W (up), A (left), S (down), D (right).", 0.03)
+                self.slow_text("Pick up the Bow and Arrow to fight the Guardian.", 0.03)
+                self.slow_text("You can attack the Guardian directly, but it's risky.", 0.03)
+                self.slow_text("Hint: If you have a Bow and Arrow, you can shoot the Guardian from a neighboring room (adjacent tile) to instantly defeat it.", 0.03)
+                self.slow_text("Use 'U' to use items from your inventory.", 0.03)
+                self.slow_text("Defeat the Guardian before your health reaches zero!", 0.03)
+                self.slow_text("=========================", 0.03)
+                self.slow_text("Press Enter to continue...", 0.01)
+                input()
 
             else:
-                self.slow_text("Invalid input. Use W, A, S, D, I, or Q.", 0.01)
+                self.slow_text("Invalid input. Use W, A, S, D, U, or I.", 0.01)
                 self.slow_text("Press Enter to continue...", 0.01)
                 input()
 

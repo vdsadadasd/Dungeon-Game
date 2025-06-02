@@ -102,7 +102,7 @@ class Game:
                 self.slow_text("The Guardian strikes!", 0.04)
                 if dodge == guardian_choice:
                     self.slow_text("You failed to dodge!", 0.04)
-                    self.P1.player_health -= self.guard.guardian_strength
+                    self.P1.player_health = self.P1.player_health - self.guard.guardian_strength
                     if self.P1.player_health < 0:
                         self.P1.player_health = 0
                     print(f"You took {self.guard.guardian_strength} damage. Your health is now {self.P1.player_health}.")

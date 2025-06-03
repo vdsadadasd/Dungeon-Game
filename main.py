@@ -12,6 +12,8 @@ import termios
 
 
 
+
+
 def getch(): # Made by AI for the purpose of user experience, does not effect backend
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
@@ -30,6 +32,7 @@ class Game:
         self.bow = Items("Bow", "Weapon", 1)
         self.arrow = Items("Arrow", "Ammo", 1)
         self.cheat_mode = False
+            
         
     # Made by AI for the purpose of user experience, does not effect backend
     def slow_text(self, text, delay=0.05):
@@ -285,8 +288,7 @@ class Game:
             if move in ["W", "A", "S", "D"]:
                 if not self.P1.move_player(move):
                     self.slow_text("Invalid movement, try again.", 0.04)
-                    self.slow_text("Press Enter to continue...", 0.04)
-                    input()
+                    self.block_input(1.5)
 
 
                 else:

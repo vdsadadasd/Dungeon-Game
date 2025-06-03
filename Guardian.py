@@ -26,4 +26,4 @@ class Guardian:
                 if 0 <= new_col < grid_size:
                     self.col = new_col
 
-        
+

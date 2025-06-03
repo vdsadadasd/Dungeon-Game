@@ -297,10 +297,11 @@ class Game:
                 if (self.P1.row, self.P1.col) == (self.bow.row, self.bow.col):
                     for item in self.P1.inventory:
                         if item.name == "Bow":
-                            item.quantity = item.quantity + self.bow.quantity
+                            item.quantity = item.quantity + 1
                             break
                     else:
-                        self.P1.inventory.append(self.bow)
+                        # Create a new Bow instance for inventory
+                        self.P1.inventory.append(Items("Bow", "Weapon", 1))
                     self.found_bow()
                     self.bow.row = None
                     self.bow.col = None
@@ -308,10 +309,11 @@ class Game:
                 if (self.P1.row, self.P1.col) == (self.arrow.row, self.arrow.col):
                     for item in self.P1.inventory:
                         if item.name == "Arrow":
-                            item.quantity = item.quantity + self.arrow.quantity
+                            item.quantity += 1
                             break
                     else:
-                        self.P1.inventory.append(self.arrow)
+                        # Create a new Arrow instance for inventory
+                        self.P1.inventory.append(Items("Arrow", "Ammo", 1))
                     self.found_arrow()
                     self.arrow.row = None
                     self.arrow.col = None

@@ -16,29 +16,26 @@ class Room:
 #         print(row)
 
 
-# Made by AI for the purpose of user experience, does not effect backend
+# Made by AI for the purpose of user experience, does not effect backend, helped with cheat mode layout
 def get_grid(player_row, player_col, grid_size, cheat_mode=False, bow_pos=None, arrow_pos=None, guardian_pos=None, inventory=None):
     inventory = inventory or []
-    # Filter out items with quantity 0
-    filtered_inventory = [item for item in inventory if getattr(item, "quantity", 1) > 0]
-    inv_lines = ["Inventory:"]
+    # Count items by (name, type), sum quantities
     item_counts = {}
-    # Only count each item name once (avoid double-counting same object)
-    seen_names = set()
-    for item in filtered_inventory:
-        if item.name not in seen_names:
-            item_counts[item.name] = item.quantity
-            seen_names.add(item.name)
+    for item in inventory:
+        if getattr(item, "quantity", 1) > 0:
+            key = (getattr(item, "name", str(item)), getattr(item, "type", ""))
+            item_counts[key] = item_counts.get(key, 0) + getattr(item, "quantity", 1)
+    inv_lines = ["Inventory:"]
     if not item_counts:
         inv_lines.append(" (empty)")
     else:
-        for name, qty in item_counts.items():
+        for (name, _type), qty in item_counts.items():
             inv_lines.append(f" {name} x{qty}")
     max_inv_lines = max(len(inv_lines), grid_size * 2 + 1)
     inv_lines += [""] * (max_inv_lines - len(inv_lines))
 
-    has_bow = any(item.name.lower() == "bow" and item.quantity > 0 for item in filtered_inventory)
-    has_arrow = any(item.name.lower() == "arrow" and item.quantity > 0 for item in filtered_inventory)
+    has_bow = any(getattr(item, "name", "").lower() == "bow" and getattr(item, "quantity", 1) > 0 for item in inventory)
+    has_arrow = any(getattr(item, "name", "").lower() == "arrow" and getattr(item, "quantity", 1) > 0 for item in inventory)
     bow_pos_to_show = None if has_bow else bow_pos
     arrow_pos_to_show = None if has_arrow else arrow_pos
 

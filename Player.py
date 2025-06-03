@@ -59,11 +59,11 @@ class Player:
         slow_text("You have an arrow, Use them with a bow", 0.03)
 
     def use_bow_encounter(self, guardian):
-        slow_text("You hit the guardian with your bow! 100 guardian dealt.", 0.03)
+        slow_text("You hit the guardian with your bow! 100 damage dealt.", 0.03)
         guardian.guardian_health = guardian.guardian_health - 100
         if guardian.guardian_health < 0:
             guardian.guardian_health = 0
-        slow_text(f"Guardian health is now {guardian.guardian_health}.", 0.03)
+        slow_text(f"Guardian health is now {guardian.guardian_health}/200.", 0.03)
         
 
     def use_bow(self, guardian):

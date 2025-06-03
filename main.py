@@ -285,6 +285,9 @@ class Game:
             if move in ["W", "A", "S", "D"]:
                 if not self.P1.move_player(move):
                     self.slow_text("Invalid movement, try again.", 0.04)
+                    self.slow_text("Press Enter to continue...", 0.04)
+                    input()
+
 
                 else:
                     self.clear_screen()

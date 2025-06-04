@@ -33,7 +33,6 @@ class Player:
         self.player_health = player_health
         self.player_strength = player_strength  
         self.inventory = []  
-        self.current_room = None
         self.row = random.randint(0, grid_size - 1)
         self.col = random.randint(0, grid_size - 1)
         self.grid_size = grid_size

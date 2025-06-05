@@ -300,7 +300,7 @@ class Game:
                     self.slow_text("Invalid movement, try again.", 0.04)
                     time.sleep(1.5)
                 else:
-                    self.clear_screen()
+                    pass
 
                 self.guard.move_guardian(self.grid_size)
 

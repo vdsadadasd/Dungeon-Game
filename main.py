@@ -281,6 +281,14 @@ class Game:
             guardian_pos=(self.guard.row, self.guard.col),
             inventory=self.P1.inventory 
         )
+            #Implemented by AI for the purpose of user experience, does not effect backend, simply displays a health bar 
+            # Live health meter display
+            max_health = 100  # You can adjust if max health changes
+            health = self.P1.player_health
+            bar_length = 20
+            filled_length = int(bar_length * health // max_health)
+            bar = '█' * filled_length + '-' * (bar_length - filled_length)
+            print(f"\nHealth: [{bar}] {health}/{max_health}")
 
             messages = ["You hear it...", "Footsteps approach...", "Something is nearby..."]
             distance = abs(self.P1.row - self.guard.row) + abs(self.P1.col - self.guard.col)

@@ -63,8 +63,18 @@ class Game:
                 input("Press Enter to continue...")
                 self.clear_screen()
             else:
-                self.slow_text("You attempted to escape \nIt managed to hit you on way out.", 0.04)
-                self.P1.player_health = self.P1.player_health - 50
+                chance = random.random()
+                if chance < 0.33:
+                    damage = 25
+                    message = "You attempted to escape, but the Guardian grazed your arm as you fled."
+                elif chance < 0.66:
+                    damage = 40
+                    message = "You attempted to escape, but the Guardian struck your side with a heavy blow."
+                else:
+                    damage = 55
+                    message = "You attempted to escape, but the Guardian landed a brutal hit on your back as you ran."
+                self.slow_text(f"{message}", 0.04)
+                self.P1.player_health -= damage
                 if self.P1.player_health < 0:
                     self.P1.player_health = 0
                 self.P1.get_health()
@@ -269,7 +279,9 @@ class Game:
             bow_pos=(self.bow.row, self.bow.col),
             arrow_pos=(self.arrow.row, self.arrow.col),
             guardian_pos=(self.guard.row, self.guard.col),
-            inventory=self.P1.inventory 
+            inventory=self.P1.inventory,
+            player_health=self.P1.player_health,
+            player_max_health=100
         )
 
             messages = ["You hear it...", "Footsteps approach...", "Something is nearby..."]
@@ -288,9 +300,7 @@ class Game:
             if move in ["W", "A", "S", "D"]:
                 if not self.P1.move_player(move):
                     self.slow_text("Invalid movement, try again.", 0.04)
-                    self.block_input(1.5)
-
-
+                    time.sleep(1.5)
                 else:
                     self.clear_screen()
 
@@ -355,4 +365,5 @@ class Game:
                 input()
 
 game = Game()
-game.start()
+if __name__ == "__main__":
+    game.start()

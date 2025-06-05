@@ -91,7 +91,6 @@ class Game:
 
             elif attack == "B":
                 if any(item.name == "Bow" for item in self.P1.inventory):
-                    # Remove one arrow from inventory if present
                     for item in self.P1.inventory:
                         if item.name == "Arrow" and item.quantity > 0:
                             item.quantity = item.quantity - 1
@@ -114,6 +113,10 @@ class Game:
                 print("Invalid choice. You hesitate and miss your chance!")
                 input("Press Enter to continue...")
 
+            # Check if guardian is defeated before continuing
+            if self.guard.guardian_health <= 0:
+                return
+
             if random.random() < 0.5:
                 self.slow_text("The Guardian cowers and retreats into the shadows...", 0.04)
                 input("Press Enter to continue...")
@@ -135,7 +138,7 @@ class Game:
                     self.slow_text("You dodged just in time!", 0.04)
                     self.slow_text("The guardian cowers and retreats into the shadows...", 0.04)
                 input("Press Enter to continue...")
-        
+
         if self.guard.guardian_health > 0:
             self.guardian_spawn()
     

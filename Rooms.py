@@ -3,19 +3,6 @@ class Room:
         self.row = row
         self.col = col
 
-# -- Original grid made by myself --
-# def get_grid(player_row, player_col): 
-#     for r in range(2):
-#         row = ""
-#         for c in range(2):
-#             if r == player_row and c == player_col:
-#                 row = row + " P "
-#             else:
-#                 row = row + " . "
-#         print(row)
-
-
-# Made by AI for the purpose of user experience, does not effect backend, helped with cheat mode layout
 def get_grid(
     player_row, player_col, grid_size,
     cheat_mode=False, bow_pos=None, arrow_pos=None, guardian_pos=None,
@@ -40,41 +27,70 @@ def get_grid(
         print(line)
     print()  # Blank line for spacing
 
-    # Determine what to show in the grid
-    has_bow = any(getattr(item, "name", "").lower() == "bow" and getattr(item, "quantity", 1) > 0 for item in inventory)
-    has_arrow = any(getattr(item, "name", "").lower() == "arrow" and getattr(item, "quantity", 1) > 0 for item in inventory)
-    bow_pos_to_show = None if has_bow else bow_pos
-    arrow_pos_to_show = None if has_arrow else arrow_pos
+    # Grid settings
+    CELL_WIDTH = 13
+    CELL_HEIGHT = 5
 
-    # Print the grid
+    def center_cell(content):
+        content_str = str(content) if content else ""
+        pad = CELL_WIDTH - len(content_str)
+        left = pad // 2
+        right = pad - left
+        return " " * left + content_str + " " * right
+
+    # Priority: Player > Guardian > Bow > Arrow
+    def cell_icon(r, c):
+        if (r, c) == (player_row, player_col):
+            return "P"
+        if cheat_mode:
+            if guardian_pos and (r, c) == guardian_pos:
+                return "G"
+            if bow_pos and (r, c) == bow_pos and not any(getattr(item, "name", "").lower() == "bow" and getattr(item, "quantity", 1) > 0 for item in inventory):
+                return "B"
+            if arrow_pos and (r, c) == arrow_pos and not any(getattr(item, "name", "").lower() == "arrow" and getattr(item, "quantity", 1) > 0 for item in inventory):
+                return "A"
+        return ""
+
+    # Print the grid (fancy, with thick borders and more space)
+    thick_h = "═" * CELL_WIDTH
+    thick_v = "║"
+    cross = "╬"
+    top_left = "╔"
+    top_right = "╗"
+    bottom_left = "╚"
+    bottom_right = "╝"
+    left_t = "╠"
+    right_t = "╣"
+    top_t = "╦"
+    bottom_t = "╩"
+
+    # Top border
+    top_border = top_left + (top_t.join([thick_h]*grid_size)) + top_right
+    print(top_border)
     for r in range(grid_size):
-        # Top border
-        row_border = "+-----" * grid_size + "+"
-        print(row_border)
-        # First line: show player/guardian/bow/arrow if present
-        row_content = ""
-        for c in range(grid_size):
-            char = "     "
-            if (r, c) == (player_row, player_col):
-                char = "  P  "
-            elif cheat_mode:
-                if guardian_pos and (r, c) == guardian_pos:
-                    char = "  G  "
-                elif bow_pos_to_show and (r, c) == bow_pos_to_show:
-                    char = "  B  "
-                elif arrow_pos_to_show and (r, c) == arrow_pos_to_show:
-                    char = "  A  "
-            row_content += f"|{char}"
-        row_content += "|"
-        print(row_content)
-        # Second line: always empty
-        print("|" + "     |" * grid_size)
-    # Bottom border
-    print("+-----" * grid_size + "+")
+        # Each cell is CELL_HEIGHT tall
+        for h in range(CELL_HEIGHT):
+            row_content = ""
+            for c in range(grid_size):
+                if h == CELL_HEIGHT // 2:
+                    icon = cell_icon(r, c)
+                    cell = center_cell(icon)
+                else:
+                    cell = " " * CELL_WIDTH
+                row_content += thick_v + cell
+            row_content += thick_v
+            print(row_content)
+        # Row separator or bottom border
+        if r < grid_size - 1:
+            sep = left_t + (cross.join([thick_h]*grid_size)) + right_t
+            print(sep)
+        else:
+            bottom_border = bottom_left + (bottom_t.join([thick_h]*grid_size)) + bottom_right
+            print(bottom_border)
 
     # Print health bar below the grid, only once
     if player_health is not None:
-        bar_length = 20
+        bar_length = 30
         hp = max(0, min(player_health, player_max_health))
         filled = int(bar_length * hp // player_max_health)
         empty = bar_length - filled

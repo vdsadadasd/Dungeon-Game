@@ -63,18 +63,18 @@ class Game:
                 input("Press Enter to continue...")
                 self.clear_screen()
             else:
-                chance = random.random()
-                if chance < 0.33:
-                    damage = 25
-                    message = "You attempted to escape, but the Guardian grazed your arm as you fled."
-                elif chance < 0.66:
-                    damage = 40
-                    message = "You attempted to escape, but the Guardian struck your side with a heavy blow."
+                # Simple randomized escape failure messages and damage
+                rand = random.randint(1, 3)
+                if rand == 1:
+                    self.slow_text("You attempted to escape.\nIt managed to hit you on the way out.", 0.04)
+                    dmg = 50
+                elif rand == 2:
+                    self.slow_text("You try to run, but the Guardian slashes your back!", 0.04)
+                    dmg = 35
                 else:
-                    damage = 55
-                    message = "You attempted to escape, but the Guardian landed a brutal hit on your back as you ran."
-                self.slow_text(f"{message}", 0.04)
-                self.P1.player_health -= damage
+                    self.slow_text("You stumble as you flee and the Guardian claws at you!", 0.04)
+                    dmg = 40
+                self.P1.player_health = self.P1.player_health - dmg
                 if self.P1.player_health < 0:
                     self.P1.player_health = 0
                 self.P1.get_health()
@@ -279,9 +279,7 @@ class Game:
             bow_pos=(self.bow.row, self.bow.col),
             arrow_pos=(self.arrow.row, self.arrow.col),
             guardian_pos=(self.guard.row, self.guard.col),
-            inventory=self.P1.inventory,
-            player_health=self.P1.player_health,
-            player_max_health=100
+            inventory=self.P1.inventory 
         )
 
             messages = ["You hear it...", "Footsteps approach...", "Something is nearby..."]

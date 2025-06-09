@@ -210,7 +210,7 @@ class Game:
         self.slow_text("You feel a shiver down your spine...", 0.05)
         self.slow_art(guardian_look())
         self.slow_text("It gives you one final look as it withers away", 0.05)
-        self.slow_text("...", 0.3)
+        self.slow_text("...", 0.9)
         input("Press Enter to exit...")
         
         

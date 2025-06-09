@@ -2,7 +2,7 @@ from Player import Player
 from Guardian import Guardian
 from Items import Items
 from Rooms import Room, get_grid
-from assets import guardian_encounter_art, guardian_intro_art, dungeon_art, bow_art, arrow_art, player_death, guardian_look
+from assets import guardian_encounter_art, dungeon_art, bow_art, arrow_art, player_death, guardian_look
 import os
 import random
 import time
@@ -174,17 +174,6 @@ class Game:
             self.intro()
 
 
-    def guard_intro(self):
-        self.clear_screen()
-        print(guardian_intro_art())
-        print()
-        self.slow_text("...\n", 0.5)
-        self.slow_text("The Guardian sees you.\n", 0.1)
-        self.slow_text("“Your fate is sealed.”\n", 0.1)
-        self.slow_text("You manage to escape.\n", 0.1)
-        self.slow_text("For now...\n", 0.3)
-        input("Press Enter to continue...")
-        self.clear_screen()
 
     def found_bow(self):
         self.slow_text("you've found a bow...", 0.05)
@@ -201,7 +190,6 @@ class Game:
         self.slow_text("You hear something lurking in the shadows.\n", 0.07)
         self.slow_text("You must do something before its too late...\n", 0.07)
         input("Press Enter to begin...")
-        self.guard_intro()
         self.clear_screen()
     
     def player_death(self):
@@ -221,7 +209,8 @@ class Game:
         self.slow_text("========================================\n", 0.01)
         self.slow_text("You feel a shiver down your spine...", 0.05)
         self.slow_art(guardian_look())
-        self.slow_text("Well done", 0.05)
+        self.slow_text("It gives you one final look as it withers away", 0.05)
+        self.slow_text("...", 0.3)
         input("Press Enter to exit...")
         
         

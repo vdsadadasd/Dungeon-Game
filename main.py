@@ -10,6 +10,15 @@ import sys
 import tty
 import termios
 
+# Sound file paths (ensure these files exist in your assets directory)
+# Used AI for the sounds has no effect on backend functionality
+EERIE_MUSIC_PATH = "assets/eerie_music.mp3"
+FOOTSTEPS_PATH = "assets/footsteps.mp3"
+ENCOUNTER_PATH = "assets/encounter.mp3"
+PICKUP_PATH = "assets/pickup.mp3"
+DEATH_PATH = "assets/death.mp3"
+VICTORY_PATH = "assets/victory.mp3"
+
 
 
 
@@ -32,6 +41,7 @@ class Game:
         self.bow = Items("Bow", "Weapon", 1)
         self.arrow = Items("Arrow", "Ammo", 1)
         self.cheat_mode = False
+        self.music_playing = False
             
         
     # Made by AI for the purpose of user experience, does not effect backend
@@ -47,6 +57,24 @@ class Game:
         for line in lines:
             print(line)
             time.sleep(line_delay)
+
+    def play_sound(self, path, background=False):
+        # Stop eerie music before playing any other sound
+        if path != EERIE_MUSIC_PATH:
+            self.stop_eerie_music()
+        # background=True will play asynchronously
+        if background:
+            os.system(f'afplay "{path}" &')
+        else:
+            os.system(f'afplay "{path}"')
+
+    def stop_eerie_music(self):
+        # Only stop eerie music, not all sounds
+        os.system(f"pkill -f '{EERIE_MUSIC_PATH}' 2>/dev/null")
+
+    def start_eerie_music(self):
+        # Start eerie music in background if not already playing
+        os.system(f'afplay "{EERIE_MUSIC_PATH}" &')
 
     def guard_encounter(self):
         import random
@@ -170,20 +198,9 @@ class Game:
 
         self.slow_text("========================================", 0.01)
         choice2 = input("Skip Intro? (Y/N): ").upper()
-        if choice2 == "N":
-            self.intro()
-
-
-
-    def found_bow(self):
-        self.slow_text("you've found a bow...", 0.05)
-
-    def found_arrow(self):
-        self.slow_text("you've found an arrow...", 0.05)
-
-    def intro(self):
+        # Remove intro logic, just clear screen and show intro text with eerie music
         self.clear_screen()
-        print(dungeon_art())
+        self.start_eerie_music()
         self.slow_text("...\n", 0.5)
         self.slow_text("You wake up in a cold, dark dungeon.\n", 0.07)
         self.slow_text("Your head throbs... you can't remember how you got here.\n", 0.07)
@@ -191,8 +208,20 @@ class Game:
         self.slow_text("You must do something before its too late...\n", 0.07)
         input("Press Enter to begin...")
         self.clear_screen()
-    
+
+    def found_bow(self):
+        self.play_sound(PICKUP_PATH, background=True)
+        self.slow_text("you've found a bow...", 0.05)
+        self.start_eerie_music()
+
+    def found_arrow(self):
+        self.play_sound(PICKUP_PATH, background=True)
+        self.slow_text("you've found an arrow...", 0.05)
+        self.start_eerie_music()
+
     def player_death(self):
+        self.stop_all_sounds()
+        self.play_sound(DEATH_PATH, background=True)
         self.clear_screen()
         self.slow_text("\n========================================", 0.01)
         self.slow_text("          You have been defeated!         ", 0.05)
@@ -203,6 +232,8 @@ class Game:
         input("Press Enter to exit...")
     
     def guardian_death(self):
+        self.stop_all_sounds()
+        self.play_sound(VICTORY_PATH, background=True)
         self.clear_screen()
         self.slow_text("\n========================================", 0.01)
         self.slow_text("          You have defeated it!         ", 0.05)
@@ -252,11 +283,16 @@ class Game:
         self.arrow_spawn()
         self.guardian_spawn()
 
+        # Eerie music already started in difficulty_select/intro
+        self.music_playing = True
+
         while True:
             if self.P1.player_health <= 0:
+                self.stop_all_sounds()
                 self.player_death()
                 break
             elif self.guard.guardian_health <= 0:
+                self.stop_all_sounds()
                 self.guardian_death()
                 break
             else:
@@ -285,8 +321,13 @@ class Game:
             messages = ["You hear it...", "Footsteps approach...", "Something is nearby..."]
             distance = abs(self.P1.row - self.guard.row) + abs(self.P1.col - self.guard.col)
             if distance == 1:
+                # Play footsteps sound effect
+                self.play_sound(FOOTSTEPS_PATH, background=True)
                 print()
                 self.slow_text(random.choice(messages), 0.04)
+            else:
+                # Optionally, stop footsteps sound if not nearby
+                pass
 
             # Original Move Input
             # move = input("Move(W/A/S/D),Inventory(I), Quit(Q): ").upper()
@@ -296,6 +337,8 @@ class Game:
             print(move)  
 
             if move in ["W", "A", "S", "D"]:
+                # Play movement sound (optional: reuse footsteps or add a new one)
+                # self.play_sound(FOOTSTEPS_PATH, background=True)
                 if not self.P1.move_player(move):
                     self.slow_text("Invalid movement, try again.", 0.04)
                     time.sleep(1.5)
@@ -312,9 +355,9 @@ class Game:
                     else:
                         # Create a new Bow instance for inventory
                         self.P1.inventory.append(Items("Bow", "Weapon", 1))
-                    self.found_bow()
                     self.bow.row = None
                     self.bow.col = None
+                    self.found_bow()
 
                 if (self.P1.row, self.P1.col) == (self.arrow.row, self.arrow.col):
                     for item in self.P1.inventory:
@@ -324,12 +367,14 @@ class Game:
                     else:
                         # Create a new Arrow instance for inventory
                         self.P1.inventory.append(Items("Arrow", "Ammo", 1))
-                    self.found_arrow()
                     self.arrow.row = None
                     self.arrow.col = None
+                    self.found_arrow()
 
                 if (self.P1.row, self.P1.col) == (self.guard.row, self.guard.col):
+                    self.play_sound(ENCOUNTER_PATH, background=True)
                     self.guard_encounter()
+                    self.start_eerie_music()
 
             elif move == "U":
                 if not self.P1.inventory:

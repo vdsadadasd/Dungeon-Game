@@ -63,7 +63,7 @@ class Game:
                 input("Press Enter to continue...")
                 self.clear_screen()
             else:
-                # Simple randomized escape failure messages and damage
+
                 rand = random.randint(1, 3)
                 if rand == 1:
                     self.slow_text("You attempted to escape.\nIt managed to hit you on the way out.", 0.04)

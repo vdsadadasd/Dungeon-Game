@@ -2,17 +2,29 @@ from Player import Player
 from Guardian import Guardian
 from Items import Items
 from Rooms import Room, get_grid
-from assets import guardian_encounter_art, dungeon_art, bow_art, arrow_art, player_death, guardian_look
+from assets import guardian_encounter_art, dungeon_art, bow_art, arrow_art, player_death, guardian_look, audio_art
 import os
 import random
 import time
 import sys
 import tty
 import termios
+import subprocess
+import signal
 
+# --Important Note--
 
+# If I forget to mention when uploading, since I have used AI for audio that runs directly in the terminal
+# There is a chance that it wont stop playing if you accidently close the terminal
+# In the case that happens, you can run the following command in your terminal to stop all audio:
+# sh stop_audio.sh (The script is included in the repository made by AI)
 
-
+EERIE_MUSIC_PATH = "assets/eerie_music.wav"
+ENCOUNTER_MUSIC_PATH = "assets/encounter.wav"
+VICTORY_MUSIC_PATH = "assets/victory.mp3"
+DEATH_MUSIC_PATH = "assets/death.mp3"
+ITEM_PICKUP_SOUND_PATH = "assets/item_pickup.aiff"
+DIFFICULTY_SELECT_MUSIC_PATH = "assets/difficulty_select.mp3"
 
 def getch(): # Made by AI for the purpose of user experience, does not effect backend
     fd = sys.stdin.fileno()
@@ -32,6 +44,7 @@ class Game:
         self.bow = Items("Bow", "Weapon", 1)
         self.arrow = Items("Arrow", "Ammo", 1)
         self.cheat_mode = False
+        self.music_proc = None  # Track the current music process
             
         
     # Made by AI for the purpose of user experience, does not effect backend
@@ -48,101 +61,206 @@ class Game:
             print(line)
             time.sleep(line_delay)
 
-    def guard_encounter(self):
-        import random
-
-        self.clear_screen()
-        print(guardian_encounter_art())
-        self.slow_text("You encounter it, what will you do?", 0.04)
-        option = input("Attack(A) or Attempt to Run(R): ").upper()
-
-        if option == "R":
-            if random.random() < 0.4:
-                self.slow_text("You managed to escape\n", 0.03)
-                self.slow_text("For now...", 0.25)
-                input("Press Enter to continue...")
-                self.clear_screen()
-            else:
-
-                rand = random.randint(1, 3)
-                if rand == 1:
-                    self.slow_text("You attempted to escape.\nIt managed to hit you on the way out.", 0.04)
-                    dmg = 50
-                elif rand == 2:
-                    self.slow_text("You try to run, but the Guardian slashes your back!", 0.04)
-                    dmg = 35
-                else:
-                    self.slow_text("You stumble as you flee and the Guardian claws at you!", 0.04)
-                    dmg = 40
-                self.P1.player_health = self.P1.player_health - dmg
-                if self.P1.player_health < 0:
-                    self.P1.player_health = 0
-                self.P1.get_health()
-                input("Press Enter to continue...")
-                self.clear_screen()
-
+    def play_music(self, path, loop=True):
+        self.stop_music()
+        abs_path = os.path.abspath(path)
+        if loop:
+            # Save the shell process so we can kill it directly
+            self.music_proc = subprocess.Popen(
+                ['bash', '-c', f'trap "" SIGHUP; while true; do afplay "{abs_path}"; done'],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                preexec_fn=os.setsid
+            )
+            self.music_shell_pid = self.music_proc.pid
         else:
-            self.slow_text("How will you attack?\n", 0.04)
-            attack = input("Melee(M) or Shoot your Bow(B)\n").upper()
+            self.music_proc = subprocess.Popen(
+                ['afplay', abs_path],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            self.music_shell_pid = None
 
-            if attack == "M":
-                self.P1.player_attack(self.guard)
-                input("Press Enter to continue...")
+    def stop_music(self):
+        # Stop the current music process if running
+        if hasattr(self, 'music_proc') and self.music_proc and self.music_proc.poll() is None:
+            try:
+                os.killpg(os.getpgid(self.music_proc.pid), signal.SIGTERM)
+            except Exception:
+                try:
+                    self.music_proc.terminate()
+                except Exception:
+                    pass
+            self.music_proc = None
+        # Kill the shell process if it exists (for looped music)
+        if hasattr(self, 'music_shell_pid') and self.music_shell_pid:
+            try:
+                os.killpg(os.getpgid(self.music_shell_pid), signal.SIGTERM)
+            except Exception:
+                pass
+            self.music_shell_pid = None
+        # Kill any stray afplay processes
+        os.system("killall afplay 2>/dev/null")
 
-            elif attack == "B":
-                if any(item.name == "Bow" for item in self.P1.inventory):
-                    for item in self.P1.inventory:
-                        if item.name == "Arrow" and item.quantity > 0:
-                            item.quantity = item.quantity - 1
-                            if item.quantity == 0:
-                                self.P1.inventory.remove(item)
-                            break
-                    else:
-                        print("No arrows left!")
-                        input("Press Enter to continue...")
-                        return
-                    self.P1.use_bow_encounter(self.guard)
-                    print("A new arrow has spawned.")
-                    self.arrow_spawn()
+    def play_sound(self, path):
+        abs_path = os.path.abspath(path)
+        subprocess.Popen(
+            ['afplay', abs_path],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+
+
+    def audio_warning(self):
+        self.slow_text("For maximum enjoyment, please increase your volume", 0.05)
+        self.slow_art(audio_art(), 0.1)
+        self.clear_screen()
+
+
+    def guard_encounter(self):
+        self.stop_music()
+        self.play_music(ENCOUNTER_MUSIC_PATH, loop=True)
+        try:
+            self.clear_screen()
+            print(guardian_encounter_art())
+            self.slow_text("You encounter it, what will you do?", 0.04)
+            option = input("Attack(A) or Attempt to Run(R): ").upper()
+
+            if option == "R":
+                if random.random() < 0.4:
+                    self.slow_text("You managed to escape\n", 0.03)
+                    self.slow_text("For now...", 0.25)
                     input("Press Enter to continue...")
+                    self.clear_screen()
                 else:
-                    print("You don't have a bow in your inventory!")
-                    input("Press Enter to continue...")
 
-            else:
-                print("Invalid choice. You hesitate and miss your chance!")
-                input("Press Enter to continue...")
-
-            # Check if guardian is defeated before continuing
-            if self.guard.guardian_health <= 0:
-                return
-
-            if random.random() < 0.5:
-                self.slow_text("The Guardian cowers and retreats into the shadows...", 0.04)
-                input("Press Enter to continue...")
-            else:
-                self.slow_text("The Guardian is enraged and lunges at you!", 0.04)
-                dodge = input("Quick! Dodge Left (L) or Right (R)? ").upper()
-                while dodge not in ["L", "R"]:
-                    dodge = input("Please choose L or R: ").upper()
-
-                guardian_choice = random.choice(["L", "R"])
-                self.slow_text("The Guardian strikes!", 0.04)
-                if dodge == guardian_choice:
-                    self.slow_text("You failed to dodge!", 0.04)
-                    self.P1.player_health = self.P1.player_health - self.guard.guardian_strength
+                    rand = random.randint(1, 3)
+                    if rand == 1:
+                        self.slow_text("You attempted to escape.\nIt managed to hit you on the way out.", 0.04)
+                        dmg = 50
+                    elif rand == 2:
+                        self.slow_text("You try to run, but the Guardian slashes your back!", 0.04)
+                        dmg = 35
+                    else:
+                        self.slow_text("You stumble as you flee and the Guardian claws at you!", 0.04)
+                        dmg = 40
+                    self.P1.player_health = self.P1.player_health - dmg
                     if self.P1.player_health < 0:
                         self.P1.player_health = 0
-                    print(f"You took {self.guard.guardian_strength} damage. Your health is now {self.P1.player_health}.")
-                else:
-                    self.slow_text("You dodged just in time!", 0.04)
-                    self.slow_text("The guardian cowers and retreats into the shadows...", 0.04)
-                input("Press Enter to continue...")
+                    self.P1.get_health()
+                    input("Press Enter to continue...")
+                    self.clear_screen()
 
-        if self.guard.guardian_health > 0:
-            self.guardian_spawn()
-    
+            else:
+                self.slow_text("How will you attack?\n", 0.04)
+                attack = input("Melee(M) or Shoot your Bow(B)\n").upper()
+
+                if attack == "M":
+                    self.P1.player_attack(self.guard)
+                    input("Press Enter to continue...")
+
+                elif attack == "B":
+                    if any(item.name == "Bow" for item in self.P1.inventory):
+                        for item in self.P1.inventory:
+                            if item.name == "Arrow" and item.quantity > 0:
+                                item.quantity = item.quantity - 1
+                                if item.quantity == 0:
+                                    self.P1.inventory.remove(item)
+                                break
+                        else:
+                            print("No arrows left!")
+                            input("Press Enter to continue...")
+                        self.P1.use_bow_encounter(self.guard)
+                        print("A new arrow has spawned.")
+                        self.arrow_spawn()
+                        input("Press Enter to continue...")
+                    else:
+                        print("You don't have a bow in your inventory!")
+                        input("Press Enter to continue...")
+
+                else:
+                    print("Invalid choice. You hesitate and miss your chance!")
+                    input("Press Enter to continue...")
+
+                if self.guard.guardian_health <= 0:
+                    return
+
+                if random.random() < 0.5:
+                    self.slow_text("The Guardian cowers and retreats into the shadows...", 0.04)
+                    input("Press Enter to continue...")
+                else:
+                    self.slow_text("The Guardian is enraged and lunges at you!", 0.04)
+                    dodge = input("Quick! Dodge Left (L) or Right (R)? ").upper()
+                    while dodge not in ["L", "R"]:
+                        dodge = input("Please choose L or R: ").upper()
+
+                    guardian_choice = random.choice(["L", "R"])
+                    self.slow_text("The Guardian strikes!", 0.04)
+                    if dodge == guardian_choice:
+                        self.slow_text("You failed to dodge!", 0.04)
+                        self.P1.player_health = self.P1.player_health - self.guard.guardian_strength
+                        if self.P1.player_health < 0:
+                            self.P1.player_health = 0
+                        print(f"You took {self.guard.guardian_strength} damage. Your health is now {self.P1.player_health}.")
+                    else:
+                        self.slow_text("You dodged just in time!", 0.04)
+                        self.slow_text("The guardian cowers and retreats into the shadows...", 0.04)
+                    input("Press Enter to continue...")
+
+            if self.guard.guardian_health > 0:
+                self.guardian_spawn()
+        finally:
+            self.stop_music()
+            self.play_music(EERIE_MUSIC_PATH, loop=True)
+
+    def player_death(self):
+        self.stop_music()
+        self.play_music(DEATH_MUSIC_PATH, loop=True)
+        self.clear_screen()
+        self.slow_text("\n========================================", 0.01)
+        self.slow_text("          You have been defeated!         ", 0.05)
+        self.slow_text("========================================\n", 0.01)
+        self.slow_art(player_death())
+        self.slow_text("Your fate is sealed...\n", 0.07)
+        self.slow_text("Do you dare to try again?", 0.05)
+        input("Press Enter to exit...")
+        self.stop_music()
+
+    def guardian_death(self):
+        self.stop_music()
+        self.play_music(VICTORY_MUSIC_PATH, loop=True)
+        self.clear_screen()
+        self.slow_text("\n========================================", 0.01)
+        self.slow_text("          You have defeated it!         ", 0.05)
+        self.slow_text("========================================\n", 0.01)
+        self.slow_text("You feel a shiver down your spine...", 0.05)
+        self.slow_art(guardian_look())
+        self.slow_text("It gives you one final look as it withers away", 0.05)
+        self.slow_text("...", 0.9)
+        input("Press Enter to exit...")
+        self.stop_music()
+
+    def title_card(self):
+        title = r"""
+  ____                                     
+|  _ \ _   _ _ __   __ _  ___  ___  _ __  
+| | | | | | | '_ \ / _` |/ _ \/ _ \| '_ \ 
+| |_| | |_| | | | | (_| |  __/ (_) | | | |
+|____/ \__,_|_| |_|\__, |\___|\___/|_| |_|
+|  _ \  ___  ___  _|___/_ _ __ | |_       
+| | | |/ _ \/ __|/ __/ _ \ '_ \| __|      
+| |_| |  __/\__ \ (_|  __/ | | | |_       
+|____/ \___||___/\___\___|_| |_|\__|      
+        """
+        self.clear_screen()
+        print(title)
+        self.slow_text("\nWelcome to Dungeon Descent!", 0.04)
+        self.slow_text("Press Enter to continue...", 0.03)
+        input()
+
     def difficulty_select(self):
+        self.play_music(DIFFICULTY_SELECT_MUSIC_PATH, loop=True)
+        self.title_card()
         while True:
             self.clear_screen()
             self.slow_text("========================================", 0.01)
@@ -170,19 +288,27 @@ class Game:
 
         self.slow_text("========================================", 0.01)
         choice2 = input("Skip Intro? (Y/N): ").upper()
+        self.stop_music()  # Stop difficulty select music before intro/game music
         if choice2 == "N":
             self.intro()
+        else:
+            # Start eerie music after skipping intro
+            self.play_music(EERIE_MUSIC_PATH, loop=True)
 
 
 
     def found_bow(self):
+        self.play_sound(ITEM_PICKUP_SOUND_PATH)
         self.slow_text("you've found a bow...", 0.05)
 
     def found_arrow(self):
+        self.play_sound(ITEM_PICKUP_SOUND_PATH)
         self.slow_text("you've found an arrow...", 0.05)
 
     def intro(self):
         self.clear_screen()
+        # Start eerie music at the beginning of the intro
+        self.play_music(EERIE_MUSIC_PATH, loop=True)
         print(dungeon_art())
         self.slow_text("...\n", 0.5)
         self.slow_text("You wake up in a cold, dark dungeon.\n", 0.07)
@@ -192,29 +318,6 @@ class Game:
         input("Press Enter to begin...")
         self.clear_screen()
     
-    def player_death(self):
-        self.clear_screen()
-        self.slow_text("\n========================================", 0.01)
-        self.slow_text("          You have been defeated!         ", 0.05)
-        self.slow_text("========================================\n", 0.01)
-        self.slow_art(player_death())
-        self.slow_text("Your fate is sealed...\n", 0.07)
-        self.slow_text("Do you dare to try again?", 0.05)
-        input("Press Enter to exit...")
-    
-    def guardian_death(self):
-        self.clear_screen()
-        self.slow_text("\n========================================", 0.01)
-        self.slow_text("          You have defeated it!         ", 0.05)
-        self.slow_text("========================================\n", 0.01)
-        self.slow_text("You feel a shiver down your spine...", 0.05)
-        self.slow_art(guardian_look())
-        self.slow_text("It gives you one final look as it withers away", 0.05)
-        self.slow_text("...", 0.9)
-        input("Press Enter to exit...")
-        
-        
-
     def guardian_spawn(self):
         while True:
             row = random.randint(0, self.grid_size - 1)
@@ -246,12 +349,13 @@ class Game:
         os.system('clear') # Made by AI for the purpose of user experience, does not effect backend
 
     def start(self):
+        self.audio_warning()
         self.difficulty_select()
         self.P1.grid_size = self.grid_size
         self.bow_spawn()
         self.arrow_spawn()
         self.guardian_spawn()
-
+        # Eerie music already started in difficulty_select
         while True:
             if self.P1.player_health <= 0:
                 self.player_death()
@@ -264,15 +368,15 @@ class Game:
 
             self.clear_screen()
             get_grid(
-            self.P1.row,
-            self.P1.col,
-            self.grid_size,
-            self.cheat_mode,
-            bow_pos=(self.bow.row, self.bow.col),
-            arrow_pos=(self.arrow.row, self.arrow.col),
-            guardian_pos=(self.guard.row, self.guard.col),
-            inventory=self.P1.inventory 
-        )
+                self.P1.row,
+                self.P1.col,
+                self.grid_size,
+                self.cheat_mode,
+                bow_pos=(self.bow.row, self.bow.col),
+                arrow_pos=(self.arrow.row, self.arrow.col),
+                guardian_pos=(self.guard.row, self.guard.col),
+                inventory=self.P1.inventory 
+            )
             #Implemented by AI for the purpose of user experience, does not effect backend, simply displays a health bar 
             # Live health meter display
             max_health = 100  # You can adjust if max health changes
@@ -288,29 +392,24 @@ class Game:
                 print()
                 self.slow_text(random.choice(messages), 0.04)
 
-            # Original Move Input
-            # move = input("Move(W/A/S/D),Inventory(I), Quit(Q): ").upper()
-
             print("Move(W/A/S/D), Use item(U), Help(H): ", end='', flush=True)
-            move = getch().upper() # I used AI to get the input without waiting for Enter key
+            move = getch().upper()
             print(move)  
 
             if move in ["W", "A", "S", "D"]:
+                # Move the player first
                 if not self.P1.move_player(move):
                     self.slow_text("Invalid movement, try again.", 0.04)
                     time.sleep(1.5)
-                else:
-                    pass
+                    continue  # Skip the rest of the loop if invalid move
 
-                self.guard.move_guardian(self.grid_size)
-
+                # Now check for item pickups after moving
                 if (self.P1.row, self.P1.col) == (self.bow.row, self.bow.col):
                     for item in self.P1.inventory:
                         if item.name == "Bow":
                             item.quantity = item.quantity + 1
                             break
                     else:
-                        # Create a new Bow instance for inventory
                         self.P1.inventory.append(Items("Bow", "Weapon", 1))
                     self.found_bow()
                     self.bow.row = None
@@ -327,9 +426,11 @@ class Game:
                     self.arrow.row = None
                     self.arrow.col = None
 
+                # Move the guardian after player and item pickup
+                self.guard.move_guardian(self.grid_size)
+
                 if (self.P1.row, self.P1.col) == (self.guard.row, self.guard.col):
                     self.guard_encounter()
-
             elif move == "U":
                 if not self.P1.inventory:
                     self.slow_text("Your inventory is empty", 0.01)

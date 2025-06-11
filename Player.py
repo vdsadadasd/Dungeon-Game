@@ -16,13 +16,13 @@ def getch(): # Made by AI for the purpose of user experience, does not effect ba
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     return ch
 
-def slow_text(text, delay=0.04):
+def slow_text(text, delay=0.04): # Made by AI for the purpose of user experience, does not effect backend
     for char in text:
         print(char, end='', flush=True)
         time.sleep(delay)
     print()
 
-def slow_art(art, line_delay=0.1):
+def slow_art(art, line_delay=0.1): # Made by AI for the purpose of user experience, does not effect backend
         lines = art.strip('\n').split('\n')
         for line in lines:
             print(line)
@@ -33,7 +33,7 @@ class Player:
         self.player_health = player_health
         self.player_strength = player_strength  
         self.inventory = []  
-        self.row = random.randint(0, grid_size - 1)
+        self.row = random.randint(0, grid_size - 1) #grid_size is determined by difficulty
         self.col = random.randint(0, grid_size - 1)
         self.grid_size = grid_size
 
@@ -109,30 +109,19 @@ class Player:
             
 
     def use_item(self, guardian):
-        while True:
-            if guardian.guardian_health <= 0:
-                break
-            else:
-                pass
-                slow_text("What item would you like to use: ", 0.03)
-                item_choice = input().lower()
-                for item in self.inventory:
-                    if item.name.lower() == item_choice and item.quantity > 0:
-                        if item.name == "Bow":
-                            result = self.use_bow(guardian)
-                            if guardian.guardian_health <= 0:
-                                return
-                            return result  # Return True if arrow missed, so main can spawn new arrow
-                        elif item.name == "Arrow":
-                            self.use_arrow()
-                        break
-                else:
-                    slow_text("Item not in inventory", 0.03)  
-
-                slow_text("Would you like to use anything else? (Y/N): ", 0.03)
-                again = input().lower()
-                if again != "y":
-                    break
+        if guardian.guardian_health <= 0:
+            return
+        slow_text("What item would you like to use: ", 0.03)
+        item_choice = input().lower()
+        for item in self.inventory:
+            if item.name.lower() == item_choice and item.quantity > 0:
+                if item.name == "Bow":
+                    result = self.use_bow(guardian)
+                    return result  # Return True if arrow missed, so main can spawn new arrow
+                elif item.name == "Arrow":
+                    self.use_arrow()
+                return
+        slow_text("Item not in inventory", 0.03)
                 
 
     def move_player(self, direction):

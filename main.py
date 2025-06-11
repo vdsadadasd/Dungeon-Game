@@ -17,7 +17,7 @@ import signal
 # If I forget to mention when uploading, since I have used AI for audio that runs directly in the terminal
 # There is a chance that it wont stop playing if you accidently close the terminal
 # In the case that happens, you can run the following command in your terminal to stop all audio:
-# sh stop_audio.sh (The script is included in the file, made by AI)
+# sh stop_audio.sh (The script is included in the file, made by AI), it kills the afplay process in the code
 
 EERIE_MUSIC_PATH = "assets/eerie_music.wav"
 ENCOUNTER_MUSIC_PATH = "assets/encounter.wav"
@@ -26,7 +26,7 @@ DEATH_MUSIC_PATH = "assets/death.mp3"
 ITEM_PICKUP_SOUND_PATH = "assets/item_pickup.aiff"
 DIFFICULTY_SELECT_MUSIC_PATH = "assets/difficulty_select.mp3"
 
-def getch(): # Made by AI for the purpose of user experience, does not effect backend
+def getch(): # Made by AI for the purpose of user experience, does not effect backend, this removes the need for pressing enter after each input
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:
@@ -61,6 +61,7 @@ class Game:
             print(line)
             time.sleep(line_delay)
 
+     # Made by AI for the purpose of user experience, does not effect backend
     def play_music(self, path, loop=True):
         self.stop_music()
         abs_path = os.path.abspath(path)
@@ -127,13 +128,14 @@ class Game:
             option = input("Attack(A) or Attempt to Run(R): ").upper()
 
             if option == "R":
+                # if user tries to run, there is a 40% chance they escape
                 if random.random() < 0.4:
                     self.slow_text("You managed to escape\n", 0.03)
                     self.slow_text("For now...", 0.25)
                     input("Press Enter to continue...")
                     self.clear_screen()
                 else:
-
+                # If they fail to escape, the guardian attacks them, with chance ranging from higher to lower damage
                     rand = random.randint(1, 3)
                     if rand == 1:
                         self.slow_text("You attempted to escape.\nIt managed to hit you on the way out.", 0.04)
@@ -160,9 +162,10 @@ class Game:
                     input("Press Enter to continue...")
 
                 elif attack == "B":
+                    # Simply checks if bow is appended anywhere in the inventory, important if they found the arrow first
                     if any(item.name == "Bow" for item in self.P1.inventory):
                         for item in self.P1.inventory:
-                            if item.name == "Arrow" and item.quantity > 0:
+                            if item.name == "Arrow" and item.quantity > 0: #Checks for arrow and removes when used
                                 item.quantity = item.quantity - 1
                                 if item.quantity == 0:
                                     self.P1.inventory.remove(item)
@@ -170,7 +173,7 @@ class Game:
                         else:
                             print("No arrows left!")
                             input("Press Enter to continue...")
-                        self.P1.use_bow_encounter(self.guard)
+                        self.P1.use_bow_encounter(self.guard) #This function is different to shooting from across the room, as it only occurs during guardian encounter
                         print("A new arrow has spawned.")
                         self.arrow_spawn()
                         input("Press Enter to continue...")
@@ -179,12 +182,12 @@ class Game:
                         input("Press Enter to continue...")
 
                 else:
-                    print("Invalid choice. You hesitate and miss your chance!")
+                    print("Invalid choice. You hesitate and miss your chance!") #If they dont input correctly, they miss their chance
                     input("Press Enter to continue...")
 
-                if self.guard.guardian_health <= 0:
+                if self.guard.guardian_health <= 0: #End of encounter, if guardian health is 0 or less
                     return
-
+                # 50% chance the guardian will attack back, else it will cower and retreat
                 if random.random() < 0.5:
                     self.slow_text("The Guardian cowers and retreats into the shadows...", 0.04)
                     input("Press Enter to continue...")
@@ -193,7 +196,7 @@ class Game:
                     dodge = input("Quick! Dodge Left (L) or Right (R)? ").upper()
                     while dodge not in ["L", "R"]:
                         dodge = input("Please choose L or R: ").upper()
-
+                    # The guardian randomly chooses a side to attack, if player guesses they exit the encounter, else they take damage
                     guardian_choice = random.choice(["L", "R"])
                     self.slow_text("The Guardian strikes!", 0.04)
                     if dodge == guardian_choice:
@@ -268,14 +271,21 @@ class Game:
             self.slow_text("========================================", 0.01)
             self.slow_text("1. Normal (4x4)", 0.03)
             self.slow_text("2. Brutal (5x5)", 0.03)
+            self.slow_text("3. Nightmare (5x5, your health is reduced)", 0.03)
             self.slow_text("----------------------------------------", 0.01)
             
-            choice = input("Enter 1 or 2: ")
+            choice = input("Enter 1, 2 or 3: ")
             if choice == "1":
                 self.grid_size = 4
+                self.nightmare_mode = False
                 break
             elif choice == "2":
                 self.grid_size = 5
+                self.nightmare_mode = False
+                break
+            elif choice == "3":
+                self.grid_size = 5
+                self.nightmare_mode = True
                 break
             else:
                 self.slow_text("Invalid choice. Try again.", 0.03)
@@ -334,7 +344,7 @@ class Game:
         while True:
             row = random.randint(0, self.grid_size - 1)
             col = random.randint(0, self.grid_size - 1)
-            if (row, col) != (self.P1.row, self.P1.col):
+            if (row, col) != (self.P1.row, self.P1.col): # Ensures guardian does not spawn on player as coords will keep changing until unique to player
                 self.guard.row = row
                 self.guard.col = col
                 break
@@ -343,7 +353,7 @@ class Game:
         while True:
             row = random.randint(0, self.grid_size - 1)
             col = random.randint(0, self.grid_size - 1)
-            if (row, col) != (self.P1.row, self.P1.col):
+            if (row, col) != (self.P1.row, self.P1.col): # Ensures bow does not spawn on player as coords will keep changing until unique to player
                 self.bow.row = row
                 self.bow.col = col
                 break
@@ -352,23 +362,25 @@ class Game:
         while True:
             row = random.randint(0, self.grid_size - 1)
             col = random.randint(0, self.grid_size - 1)
-            if (row, col) != (self.P1.row, self.P1.col) and (row, col) != (self.bow.row, self.bow.col):
+            if (row, col) != (self.P1.row, self.P1.col) and (row, col) != (self.bow.row, self.bow.col): # Ensures arrow does not spawn on player aswell as the bow as coords will keep changing until unique to player
                 self.arrow.row = row
                 self.arrow.col = col
                 break
 
     def clear_screen(self):
-        os.system('clear') # Made by AI for the purpose of user experience, does not effect backend
+        os.system('clear') # Made by AI for the purpose of user experience, does not effect backend, useful for clearing the terminal screen
 
     def start(self):
         self.audio_warning()
         self.difficulty_select()
-        self.P1.grid_size = self.grid_size
+        self.P1.grid_size = self.grid_size  # Adjust player grid size based on difficulty
+        if self.nightmare_mode:
+            self.P1.player_health = 50  # Double guardian damage in nightmare mode
         self.bow_spawn()
         self.arrow_spawn()
         self.guardian_spawn()
         # Eerie music already started in difficulty_select
-        while True:
+        while True: #Main game loop
             if self.P1.player_health <= 0:
                 self.player_death()
                 break
@@ -388,23 +400,31 @@ class Game:
                 arrow_pos=(self.arrow.row, self.arrow.col),
                 guardian_pos=(self.guard.row, self.guard.col),
                 inventory=self.P1.inventory 
-            )
+            ) #Initializes the grid with player, bow, arrow, and guardian positions, useful for cheatmode
+
             #Implemented by AI for the purpose of user experience, does not effect backend, simply displays a health bar 
             # Live health meter display
-            max_health = 100  # You can adjust if max health changes
+
+            if self.nightmare_mode:
+                max_health = 50
+            else:
+                max_health = 100  
+
             health = self.P1.player_health
             bar_length = 20
             filled_length = int(bar_length * health // max_health)
             bar = '█' * filled_length + '-' * (bar_length - filled_length)
             print(f"\nHealth: [{bar}] {health}/{max_health}")
 
+            # Create a list of messages to display when the guardian is nearby    
             messages = ["You hear it...", "Footsteps approach...", "Something is nearby..."]
             distance = abs(self.P1.row - self.guard.row) + abs(self.P1.col - self.guard.col)
+            # The point of abs (abosolute value) is to make sure the distance shows for all directions, not just up and down
             if distance == 1:
                 print()
                 self.slow_text(random.choice(messages), 0.04)
 
-            print("Move(W/A/S/D), Use item(U), Help(H): ", end='', flush=True)
+            print("Move(W/A/S/D), Use item(U), Help(H), Quit(Q): ", end='', flush=True)
             move = getch().upper()
             print(move)  
 
@@ -416,41 +436,38 @@ class Game:
                     continue  # Skip the rest of the loop if invalid move
 
                 # Now check for item pickups after moving
+                # Check for bow pickup
                 if (self.P1.row, self.P1.col) == (self.bow.row, self.bow.col):
-                    for item in self.P1.inventory:
-                        if item.name == "Bow":
-                            item.quantity = item.quantity + 1
-                            break
-                    else:
-                        self.P1.inventory.append(Items("Bow", "Weapon", 1))
-                    self.found_bow()
+                    if self.bow not in self.P1.inventory:
+                        self.P1.inventory.append(self.bow)
+                        self.found_bow()
                     self.bow.row = None
                     self.bow.col = None
 
+                # Check for arrow pickup (only one arrow exists at a time)
                 if (self.P1.row, self.P1.col) == (self.arrow.row, self.arrow.col):
-                    for item in self.P1.inventory:
-                        if item.name == "Arrow":
-                            item.quantity = item.quantity + 1
-                            break
-                    else:
-                        self.P1.inventory.append(Items("Arrow", "Ammo", 1))
-                    self.found_arrow()
+                    if self.arrow not in self.P1.inventory:
+                        self.P1.inventory.append(self.arrow)
+                        self.found_arrow()
                     self.arrow.row = None
                     self.arrow.col = None
 
                 # Move the guardian after player and item pickup
                 self.guard.move_guardian(self.grid_size)
 
+                # Check for guardian encounter after moving
                 if (self.P1.row, self.P1.col) == (self.guard.row, self.guard.col):
                     self.guard_encounter()
+
+
             elif move == "U":
                 if not self.P1.inventory:
                     self.slow_text("Your inventory is empty", 0.01)
                     self.slow_text("Press Enter to continue...", 0.01)
                     input()
                 else:
-                    result = self.P1.use_item(self.guard)
-                    if result == True:
+                    result = self.P1.use_item(self.guard) #Passed through the guardian because if the player wants to use bow, it can alter the guardians data (i.e. damage it)
+                    if result == True: #The point of using result is to check if arrow was used. if so a new one spawns
                         self.arrow_spawn()
                         self.slow_text("Press Enter to continue...", 0.01)
                         input()
@@ -469,11 +486,15 @@ class Game:
                 self.slow_text("Press Enter to continue...", 0.01)
                 input()
 
+            elif move == "Q":
+                self.slow_text("Quitting game. Goodbye!", 0.03)
+                break
+
             else:
-                self.slow_text("Invalid input. Use W, A, S, D, U, or I.", 0.01)
+                self.slow_text("Invalid input. Use W, A, S, D, U, H, or Q.", 0.01)
                 self.slow_text("Press Enter to continue...", 0.01)
                 input()
 
-game = Game()
-if __name__ == "__main__":
+game = Game() #Initialises the game
+if __name__ == "__main__": #Checks if the file name is main.py, if so it runs the game
     game.start()

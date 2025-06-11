@@ -17,7 +17,7 @@ import signal
 # If I forget to mention when uploading, since I have used AI for audio that runs directly in the terminal
 # There is a chance that it wont stop playing if you accidently close the terminal
 # In the case that happens, you can run the following command in your terminal to stop all audio:
-# sh stop_audio.sh (The script is included in the repository made by AI)
+# sh stop_audio.sh (The script is included in the file, made by AI)
 
 EERIE_MUSIC_PATH = "assets/eerie_music.wav"
 ENCOUNTER_MUSIC_PATH = "assets/encounter.wav"
@@ -280,14 +280,26 @@ class Game:
             else:
                 self.slow_text("Invalid choice. Try again.", 0.03)
 
-        cheat = input("Enable Cheat Mode? (Y/N): ").upper()
-        if cheat == "Y":
-            self.cheat_mode = True 
-        else:
-            self.cheat_mode = False
+        # Cheat mode input validation
+        while True:
+            cheat = input("Enable Cheat Mode? (Y/N): ").upper()
+            if cheat == "Y":
+                self.cheat_mode = True
+                break
+            elif cheat == "N":
+                self.cheat_mode = False
+                break
+            else:
+                self.slow_text("Invalid input. Please enter Y or N.", 0.03)
 
         self.slow_text("========================================", 0.01)
-        choice2 = input("Skip Intro? (Y/N): ").upper()
+        # Skip intro input validation
+        while True:
+            choice2 = input("Skip Intro? (Y/N): ").upper()
+            if choice2 in ["Y", "N"]:
+                break
+            else:
+                self.slow_text("Invalid input. Please enter Y or N.", 0.03)
         self.stop_music()  # Stop difficulty select music before intro/game music
         if choice2 == "N":
             self.intro()

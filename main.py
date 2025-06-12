@@ -2,7 +2,7 @@ from Player import Player
 from Guardian import Guardian
 from Items import Items
 from Rooms import Room, get_grid
-from assets import guardian_encounter_art, dungeon_art, bow_art, arrow_art, player_death, guardian_look, audio_art
+from assets import guardian_encounter_art, dungeon_art, bow_art, arrow_art, player_death, guardian_look
 import os
 import random
 import time
@@ -114,7 +114,8 @@ class Game:
 
     def audio_warning(self):
         self.slow_text("For maximum enjoyment, please increase your volume", 0.05)
-        self.slow_art(audio_art(), 0.1)
+        self.slow_text("Press Enter to continue", 0.05)
+        input()
         self.clear_screen()
 
 

@@ -2,6 +2,16 @@ class Room:
     def __init__(self, row, col):
         self.row = row
         self.col = col
+# -- Original code for get_grid function --
+# def get_grid(player_row, player_col, grid_size):
+#     for r in range(grid_size):
+#         row = ""
+#         for c in range(grid_size):
+#             if r == player_row and c == player_col:
+#                 row += " P "
+#             else:
+#                 row += " . "
+#         print(row)
 
 def get_grid(
     player_row, player_col, grid_size,

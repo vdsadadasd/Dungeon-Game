@@ -114,8 +114,6 @@ class Game:
 
     def audio_warning(self):
         self.slow_text("For maximum enjoyment, please increase your volume", 0.05)
-        self.slow_text("Press Enter to continue", 0.05)
-        input()
         self.clear_screen()
 
 
@@ -396,7 +394,7 @@ class Game:
                 self.P1.row,
                 self.P1.col,
                 self.grid_size,
-                self.cheat_mode,
+                self.cheat_mode, #If you comment out the rest of the parameters under this my original grid will work on Rooms.py, these are only for cheat mode made by Ai.
                 bow_pos=(self.bow.row, self.bow.col),
                 arrow_pos=(self.arrow.row, self.arrow.col),
                 guardian_pos=(self.guard.row, self.guard.col),
@@ -489,6 +487,7 @@ class Game:
 
             elif move == "Q":
                 self.slow_text("Quitting game. Goodbye!", 0.03)
+                self.stop_music()
                 break
 
             else:

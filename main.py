@@ -2,7 +2,7 @@ from Player import Player
 from Guardian import Guardian
 from Items import Items
 from Rooms import Room, get_grid
-from assets import guardian_encounter_art, dungeon_art, bow_art, arrow_art, player_death, guardian_look
+from assets import guardian_encounter_art, dungeon_art, player_death, guardian_look
 import os
 import random
 import time

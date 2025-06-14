@@ -1,8 +1,3 @@
-# Important Note
-
-The game uses AI-generated audio that plays via the afplay command in the terminal. If you close the terminal without stopping the game properly, the audio may keep playing in the background. To fix this, run the included script:
-
-sh stop_audio.sh
 
 # Dungeon-Game
 
@@ -13,6 +8,7 @@ It is a text-based adventure game where you play as a character trapped in a mys
 You navigate a grid-based dungeon (either 4x4 or 5x5, depending on difficulty), searching for weapons (a Bow and Arrows) and avoiding or confronting the Guardian. The game features turn-based movement, inventory management, and random events. You can attack the Guardian directly or use ranged attacks if you have the right items. The game ends when you defeat the Guardian or your health drops to zero.
 
 Hints and atmospheric messages help guide you, and the game includes ASCII art and slow text effects for immersion.
+Make you terminal as big as possible for the best experience
 
 
 # Starting the Game
@@ -21,6 +17,6 @@ Hints and atmospheric messages help guide you, and the game includes ASCII art a
 
 2. Navigate to project folder: cd Dungeon-Game
 
-3. Run from main.py
+3. Run from main.py: python main.py 
 
 

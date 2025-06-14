@@ -9,22 +9,8 @@ import time
 import sys
 import tty
 import termios
-import subprocess
-import signal
 
-# --Important Note--
 
-# If I forget to mention when uploading, since I have used AI for audio that runs directly in the terminal
-# There is a chance that it wont stop playing if you accidently close the terminal
-# In the case that happens, you can run the following command in your terminal to stop all audio:
-# sh stop_audio.sh (The script is included in the file, made by AI), it kills the afplay process in the code
-
-EERIE_MUSIC_PATH = "assets/eerie_music.wav"
-ENCOUNTER_MUSIC_PATH = "assets/encounter.wav"
-VICTORY_MUSIC_PATH = "assets/victory.mp3"
-DEATH_MUSIC_PATH = "assets/death.mp3"
-ITEM_PICKUP_SOUND_PATH = "assets/item_pickup.aiff"
-DIFFICULTY_SELECT_MUSIC_PATH = "assets/difficulty_select.mp3"
 
 def getch(): # Made by AI for the purpose of user experience, does not effect backend, this removes the need for pressing enter after each input
     fd = sys.stdin.fileno()
@@ -44,7 +30,6 @@ class Game:
         self.bow = Items("Bow", "Weapon", 1)
         self.arrow = Items("Arrow", "Ammo", 1)
         self.cheat_mode = False
-        self.music_proc = None  # Track the current music process
             
         
     # Made by AI for the purpose of user experience, does not effect backend
@@ -61,66 +46,8 @@ class Game:
             print(line)
             time.sleep(line_delay)
 
-     # Made by AI for the purpose of user experience, does not effect backend
-    def play_music(self, path, loop=True):
-        self.stop_music()
-        abs_path = os.path.abspath(path)
-        if loop:
-            # Save the shell process so we can kill it directly
-            self.music_proc = subprocess.Popen(
-                ['bash', '-c', f'trap "" SIGHUP; while true; do afplay "{abs_path}"; done'],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                preexec_fn=os.setsid
-            )
-            self.music_shell_pid = self.music_proc.pid
-        else:
-            self.music_proc = subprocess.Popen(
-                ['afplay', abs_path],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-            self.music_shell_pid = None
-
-    def stop_music(self):
-        # Stop the current music process if running
-        if hasattr(self, 'music_proc') and self.music_proc and self.music_proc.poll() is None:
-            try:
-                os.killpg(os.getpgid(self.music_proc.pid), signal.SIGTERM)
-            except Exception:
-                try:
-                    self.music_proc.terminate()
-                except Exception:
-                    pass
-            self.music_proc = None
-        # Kill the shell process if it exists (for looped music)
-        if hasattr(self, 'music_shell_pid') and self.music_shell_pid:
-            try:
-                os.killpg(os.getpgid(self.music_shell_pid), signal.SIGTERM)
-            except Exception:
-                pass
-            self.music_shell_pid = None
-        # Kill any stray afplay processes
-        os.system("killall afplay 2>/dev/null")
-
-    def play_sound(self, path):
-        abs_path = os.path.abspath(path)
-        subprocess.Popen(
-            ['afplay', abs_path],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
-
-
-    def audio_warning(self):
-        self.slow_text("For maximum enjoyment, please increase your volume", 0.05)
-        self.clear_screen()
-
 
     def guard_encounter(self):
-        self.stop_music()
-        self.play_music(ENCOUNTER_MUSIC_PATH, loop=True)
-        try:
             self.clear_screen()
             print(guardian_encounter_art())
             self.slow_text("You encounter it, what will you do?", 0.04)
@@ -211,13 +138,8 @@ class Game:
 
             if self.guard.guardian_health > 0:
                 self.guardian_spawn()
-        finally:
-            self.stop_music()
-            self.play_music(EERIE_MUSIC_PATH, loop=True)
 
     def player_death(self):
-        self.stop_music()
-        self.play_music(DEATH_MUSIC_PATH, loop=True)
         self.clear_screen()
         self.slow_text("\n========================================", 0.01)
         self.slow_text("          You have been defeated!         ", 0.05)
@@ -226,11 +148,8 @@ class Game:
         self.slow_text("Your fate is sealed...\n", 0.07)
         self.slow_text("Do you dare to try again?", 0.05)
         input("Press Enter to exit...")
-        self.stop_music()
 
     def guardian_death(self):
-        self.stop_music()
-        self.play_music(VICTORY_MUSIC_PATH, loop=True)
         self.clear_screen()
         self.slow_text("\n========================================", 0.01)
         self.slow_text("          You have defeated it!         ", 0.05)
@@ -240,7 +159,6 @@ class Game:
         self.slow_text("It gives you one final look as it withers away", 0.05)
         self.slow_text("...", 0.9)
         input("Press Enter to exit...")
-        self.stop_music()
 
     def title_card(self):
         title = r"""
@@ -261,7 +179,6 @@ class Game:
         input()
 
     def difficulty_select(self):
-        self.play_music(DIFFICULTY_SELECT_MUSIC_PATH, loop=True)
         self.title_card()
         while True:
             self.clear_screen()
@@ -309,27 +226,21 @@ class Game:
                 break
             else:
                 self.slow_text("Invalid input. Please enter Y or N.", 0.03)
-        self.stop_music()  # Stop difficulty select music before intro/game music
         if choice2 == "N":
             self.intro()
         else:
-            # Start eerie music after skipping intro
-            self.play_music(EERIE_MUSIC_PATH, loop=True)
+            pass
 
 
 
     def found_bow(self):
-        self.play_sound(ITEM_PICKUP_SOUND_PATH)
         self.slow_text("you've found a bow...", 0.05)
 
     def found_arrow(self):
-        self.play_sound(ITEM_PICKUP_SOUND_PATH)
         self.slow_text("you've found an arrow...", 0.05)
 
     def intro(self):
         self.clear_screen()
-        # Start eerie music at the beginning of the intro
-        self.play_music(EERIE_MUSIC_PATH, loop=True)
         print(dungeon_art())
         self.slow_text("...\n", 0.5)
         self.slow_text("You wake up in a cold, dark dungeon.\n", 0.07)
@@ -370,7 +281,6 @@ class Game:
         os.system('clear') # Made by AI for the purpose of user experience, does not effect backend, useful for clearing the terminal screen
 
     def start(self):
-        self.audio_warning()
         self.difficulty_select()
         self.P1.grid_size = self.grid_size  # Adjust player grid size based on difficulty
         if self.nightmare_mode:
@@ -378,7 +288,6 @@ class Game:
         self.bow_spawn()
         self.arrow_spawn()
         self.guardian_spawn()
-        # Eerie music already started in difficulty_select
         while True: #Main game loop
             if self.P1.player_health <= 0:
                 self.player_death()
@@ -487,7 +396,6 @@ class Game:
 
             elif move == "Q":
                 self.slow_text("Quitting game. Goodbye!", 0.03)
-                self.stop_music()
                 break
 
             else:

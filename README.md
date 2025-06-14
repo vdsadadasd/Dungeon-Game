@@ -14,7 +14,7 @@ Make your terminal as big as possible for the best experience
 # Starting the Game 
 - Ensure Python is installed
 
-1. Open Terminal and enter: git clone https://github.com/vdsadadasd/Dungeon-Game.git
+1. Open Terminal and enter: "git clone https://github.com/vdsadadasd/Dungeon-Game.git"
 
 2. Navigate to project folder: cd Dungeon-Game
 

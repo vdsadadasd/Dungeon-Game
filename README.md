@@ -13,6 +13,7 @@ Make your terminal as big as possible for the best experience
 
 # Starting the Game 
 - Ensure Python is installed
+- Only works on Mac OS due to use of tty and terminos for screen clearing
 
 1. Open Terminal and enter: "git clone https://github.com/vdsadadasd/Dungeon-Game.git"
 

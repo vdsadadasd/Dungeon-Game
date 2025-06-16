@@ -15,11 +15,11 @@ Make your terminal as big as possible for the best experience
 - Ensure Python is installed
 - Only works on Mac OS due to use of tty and terminos for screen clearing
 
-1. Open Terminal and enter: git clone https://github.com/vdsadadasd/Dungeon-Game.git
+1. Open Terminal and enter: ```git clone https://github.com/vdsadadasd/Dungeon-Game.git```
 
-2. Navigate to project folder: cd Dungeon-Game
+2. Navigate to project folder: ```cd Dungeon-Game```
 
-3. Run from main.py: python main.py
+3. Run from main.py: ```python main.py``` (Or just Run from main.py)
    
 
 

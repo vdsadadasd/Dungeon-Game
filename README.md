@@ -1,7 +1,10 @@
 
 # Dungeon-Game
 
-Welcome to my game repository.
+💻 GitHub Repository (for easy viewing and version history):  
+https://github.com/vdsadadasd/Dungeon-Game
+
+Welcome to my game.
 
 It is a Python text-based adventure game where you play as a character trapped in a mysterious dungeon. Your objective is to escape by defeating the powerful Guardian that stalks the halls.
 

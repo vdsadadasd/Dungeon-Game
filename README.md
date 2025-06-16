@@ -19,7 +19,7 @@ Make your terminal as big as possible for the best experience
 
 2. Navigate to project folder: ```cd Dungeon-Game```
 
-3. Run from main.py: ```python main.py``` (Or just Run from main.py)
+3. Start the game: ```python main.py``` (Or just Run from main.py)
    
 
 
